@@ -8,6 +8,7 @@ import java.util.TreeMap;
  */
 public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 
+	@Override
 	public BWTIndex build(String text) {
 		char [] bwt = new char[text.length() + 1];
 		TreeMap<String, Integer> suffixArray = buildSuffixArray(text);
@@ -19,6 +20,7 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 			} else {
 				bwt[i] = text.charAt(suffixArray.get(key) - 1);
 			}
+			i++;
 		}
 
 		return new SimpleBWTIndex(bwt);
