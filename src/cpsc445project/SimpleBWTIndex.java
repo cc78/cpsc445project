@@ -8,10 +8,17 @@ public class SimpleBWTIndex implements BWTIndex {
 		this.index = index;
 	}
 
+	@Override
 	public char get(int i) {
 		return index[i];
 	}
 
+	@Override
+	public int[] getSARange(int i, int j) {
+		return new int[2];
+	}
+
+	@Override
 	public int size() {
 		return index.length;
 	}

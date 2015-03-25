@@ -12,5 +12,10 @@ public class CompressedBWTIndex implements BWTIndex {
 		return 0;  // TODO
 	};
 
+	@Override
+	public int[] getSARange(int i, int j) {
+		return new int[2];  // TODO
+	}
+
 
 }
