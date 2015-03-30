@@ -13,8 +13,8 @@ public class CompressedBWTIndex implements BWTIndex {
 	};
 
 	@Override
-	public int[] getSARange(int i, int j) {
-		return new int[2];  // TODO
+	public boolean isSuffix(int i, int j, char[] suffix, char z) {  // TODO
+		return false;
 	}
 
 

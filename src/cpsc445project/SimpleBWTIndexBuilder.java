@@ -1,5 +1,7 @@
 package cpsc445project;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TreeMap;
 
 /*
@@ -9,7 +11,8 @@ import java.util.TreeMap;
 public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 
 	@Override
-	public BWTIndex build(String text) {
+	public BWTIndex build(String text, char[] alphabet) {
+		/* build BWT */
 		char [] bwt = new char[text.length() + 1];
 		TreeMap<String, Integer> suffixArray = buildSuffixArray(text);
 
@@ -23,7 +26,10 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 			i++;
 		}
 
-		return new SimpleBWTIndex(bwt);
+		/* calculate c */
+		Map<String, Integer> c = countLesserOccurrences(text, alphabet);
+
+		return new SimpleBWTIndex(bwt, c);
 	}
 
 	private TreeMap<String, Integer> buildSuffixArray(String text) {
@@ -31,12 +37,44 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 
 		suffixArray.put("", text.length());
 
-		// sorted order will be maintained in TreeMap?
+		// sorted order will be maintained in TreeMap
 		for (int i = 0; i < text.length(); i++) {
 			suffixArray.put(text.substring(i), i);
 		}
 
 		return suffixArray;
+	}
+
+	/*
+	 * For each character c in the alphabet, count the number of occurrences in text
+	 * of characters that are lexicographically smaller than c.
+	 */
+	private Map<String, Integer> countLesserOccurrences(String text, char[] alphabet) {
+		HashMap<String, Integer> occurrences = new HashMap<String, Integer>();
+
+		for (char c : alphabet) {
+			int count = 0;
+			for (char d : alphabet) {
+				if (d < c) {
+					count += countMatches(text, d);
+				}
+			}
+			occurrences.put(String.valueOf(c), count);
+		}
+
+		return occurrences;
+	}
+
+	private int countMatches(String text, char c) {
+		int count = 0;
+		char[] myText = text.toCharArray();
+
+		for (char d : myText) {
+			if (d == c) {
+				count++;
+			}
+		}
+		return count;
 	}
 
 }

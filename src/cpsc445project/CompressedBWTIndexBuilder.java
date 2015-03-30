@@ -10,7 +10,7 @@ public class CompressedBWTIndexBuilder implements BWTIndexBuilder {
 	//private CompressedSuffixArray csa;
 
 	@Override
-	public BWTIndex build(String text) {
+	public BWTIndex build(String text, char[] alphabet) {
 		return new CompressedBWTIndex();  // TODO
 	}
 
