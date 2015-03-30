@@ -1,10 +1,15 @@
 package cpsc445project;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
+import cpsc445project.BWTIndex;
+import cpsc445project.BWTIndexBuilder;
+import cpsc445project.SimpleBWTIndex;
 
 /*
  *  Provides a simple but inefficient method for building a BWTIndex.
@@ -32,7 +37,7 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 		Map<String, Integer> c = countLesserOccurrences(text, alphabet);
 
 		/* construct occ */
-		int[][] occ = countOccurrencesByIndex(text, alphabet);
+		int[][] occ = countOccurrencesByIndex(bwt, alphabet);
 
 		return new SimpleBWTIndex(bwt, c, alphabet, occ);
 	}
@@ -95,6 +100,29 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 		// TODO
 
 		return occ;
+	}
+	
+	/*
+	 * Compress BWT as per Ferragina and Manzini (2005). (Required for building occ.)
+	 */
+	private void bwtRLX(char[] bwt, List<Character> alphabet) {
+		List<Integer> mtf = new ArrayList<Integer>(bwt.length);
+		Collections.sort(alphabet);
+		
+		/* move-to-front transform */
+		for (int i = 0; i < bwt.length; i++) {
+			char c = bwt[i];
+			int mtfValue = alphabet.indexOf(c);
+			mtf.add(i, mtfValue);
+			// move c to the front of alphabet
+			alphabet.remove(mtfValue);
+			alphabet.add(0, c);
+		}
+		
+		/* encode each run of 0's in mtf using run-length encoder */
+		// TODO
+		
+		
 	}
 
 }
