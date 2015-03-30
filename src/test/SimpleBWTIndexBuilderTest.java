@@ -2,6 +2,10 @@ package test;
 
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.Before;
 import org.junit.Test;
 
 import cpsc445project.BWTIndex;
@@ -10,9 +14,15 @@ import cpsc445project.SimpleBWTIndexBuilder;
 
 public class SimpleBWTIndexBuilderTest {
 
-	private static char[] alphabet = new char[] {'a','b'};
+	private static List<Character> alphabet = new ArrayList<Character>();
 	private static String text = "abaaba";
 	private static BWTIndexBuilder builder = new SimpleBWTIndexBuilder();
+
+	@Before
+	public void buildAlphabet() {
+		alphabet.add('a');
+		alphabet.add('b');
+	}
 
 	@Test
 	public void testBuild() {

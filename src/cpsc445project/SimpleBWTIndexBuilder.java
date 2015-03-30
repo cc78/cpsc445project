@@ -1,6 +1,8 @@
 package cpsc445project;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -11,7 +13,7 @@ import java.util.TreeMap;
 public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 
 	@Override
-	public BWTIndex build(String text, char[] alphabet) {
+	public BWTIndex build(String text, List<Character> alphabet) {
 		/* build BWT */
 		char [] bwt = new char[text.length() + 1];
 		TreeMap<String, Integer> suffixArray = buildSuffixArray(text);
@@ -26,10 +28,13 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 			i++;
 		}
 
-		/* calculate c */
+		/* construct c */
 		Map<String, Integer> c = countLesserOccurrences(text, alphabet);
 
-		return new SimpleBWTIndex(bwt, c);
+		/* construct occ */
+		int[][] occ = countOccurrencesByIndex(text, alphabet);
+
+		return new SimpleBWTIndex(bwt, c, alphabet, occ);
 	}
 
 	private TreeMap<String, Integer> buildSuffixArray(String text) {
@@ -49,7 +54,7 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 	 * For each character c in the alphabet, count the number of occurrences in text
 	 * of characters that are lexicographically smaller than c.
 	 */
-	private Map<String, Integer> countLesserOccurrences(String text, char[] alphabet) {
+	private Map<String, Integer> countLesserOccurrences(String text, List<Character> alphabet) {
 		HashMap<String, Integer> occurrences = new HashMap<String, Integer>();
 
 		for (char c : alphabet) {
@@ -75,6 +80,21 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 			}
 		}
 		return count;
+	}
+
+	/*
+	 * Build auxiliary data structure as described in Ferragina and Manzini (2005)
+	 * using word-size truncated recursion.
+	 */
+	private int[][] countOccurrencesByIndex(String text, List<Character> alphabet) {
+		int[][] occ = new int[alphabet.size()][text.length()];
+
+		List<Character> bwtAlphabet = new ArrayList<Character>(alphabet);
+		bwtAlphabet.add('\0');
+
+		// TODO
+
+		return occ;
 	}
 
 }

@@ -13,7 +13,7 @@ public class CompressedBWTIndex implements BWTIndex {
 	};
 
 	@Override
-	public boolean isSuffix(int i, int j, char[] suffix, char z) {  // TODO
+	public boolean isSuffix(int i, char[] suffix, char z) {  // TODO
 		return false;
 	}
 

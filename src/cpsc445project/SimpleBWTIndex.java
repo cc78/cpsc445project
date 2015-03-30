@@ -1,5 +1,6 @@
 package cpsc445project;
 
+import java.util.List;
 import java.util.Map;
 
 /*
@@ -10,10 +11,14 @@ public class SimpleBWTIndex implements BWTIndex {
 
 	private char [] index = new char[0];
 	private Map<String, Integer> c;
+	private List<Character> alphabet;
+	private int[][] occ;
 
-	public SimpleBWTIndex(char[] index, Map<String, Integer> c) {
+	public SimpleBWTIndex(char[] index, Map<String, Integer> c, List<Character> alphabet, int[][] occ) {
 		this.index = index;
 		this.c = c;
+		this.alphabet = alphabet;
+		this.occ = occ;
 	}
 
 	@Override
@@ -22,9 +27,9 @@ public class SimpleBWTIndex implements BWTIndex {
 	}
 
 	@Override
-	public boolean isSuffix(int i, int j, char[] suffix, char z) {  // TODO
-		int[] saRange = getSARange(i, j, suffix, z);
-		return saRange[0] <= saRange[1];
+	public boolean isSuffix(int i, char[] suffix, char z) {  // TODO
+		int[] saRange = getSARange(i, suffix, z);
+		return saRange[1] >= saRange[0];
 	}
 
 	@Override
@@ -32,8 +37,10 @@ public class SimpleBWTIndex implements BWTIndex {
 		return index.length;
 	}
 
-	private int[] getSARange(int i, int j, char[] suffix, char z) {
-		int p = this.c.get(String.valueOf(z));
-		return new int[2];
+	private int[] getSARange(int i, char[] suffix, char z) {
+		int p = c.get(String.valueOf(z));
+		int q = occ[alphabet.indexOf(z)][i];
+
+		return new int[] {p, q};
 	}
 }
