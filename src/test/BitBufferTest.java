@@ -34,6 +34,18 @@ public class BitBufferTest {
 	}
 
 	@Test
+	public void testGetBit() {
+		buf.setBit(0, true);
+		assertTrue(buf.getBit(0) == 1);
+
+		buf.setBit(5, true);
+		assertTrue(buf.getBit(5) == 1);
+
+		buf.setBit(5, false);
+		assertTrue(buf.getBit(5) == 0);
+	}
+
+	@Test
 	public void testSetBitsToBinaryValueOf() {
 		ByteBuffer byteBuf = buf.asByteBuffer();
 
@@ -54,5 +66,17 @@ public class BitBufferTest {
 		// set to 0
 		buf.setBitsToBinaryValueOf(1, 0);
 		assertTrue(byteBuf.get(0) == -93);  // 10100011
+	}
+
+	@Test
+	public void testToString() {
+		buf.setBit(0, true);
+		buf.setBit(3, true);
+		buf.setBit(4, true);
+		buf.setBit(5, true);
+		buf.setBit(11, true);
+		buf.setBit(15, true);
+		System.out.println(buf.toString());
+		assertTrue(buf.toString().equals("1001110000010001"));
 	}
 }

@@ -8,11 +8,11 @@ import java.nio.ByteBuffer;
 public class BitBuffer {
 	private ByteBuffer buffer;
 	private int length;
-	private int nextIndex;	// the index of next bit to be set
+	private int nextIndex;	// first index in buffer that has not been set to 0 or 1
 
-	public BitBuffer(int capacity) {
-		this.buffer = ByteBuffer.allocate((int) Math.ceil(capacity / 8));
-		this.length = capacity;  // effective length
+	public BitBuffer(int size) {
+		this.buffer = ByteBuffer.allocate((int) Math.ceil(size / 8));
+		this.length = size;  // effective length in bits; do not write beyond this
 		this.nextIndex = 0;
 	}
 
@@ -29,6 +29,7 @@ public class BitBuffer {
 			quotient = quotient / 2;
 			i++;
 		} while (quotient > 0);
+
 	}
 
 	public void setBit(int index, boolean value) {
@@ -38,22 +39,37 @@ public class BitBuffer {
 		byte newBit = value? (byte) ((0x00000080 >>> (index % 8)) & 0x000000FF) : (byte) 0x00;
 		byte newByte = (byte) ((b & leftMask) | newBit | (b & rightMask));
 		buffer.put(index / 8, newByte);
-		if (index > nextIndex) {
+
+		if (index >= nextIndex) {
 			nextIndex = index + 1;
 		}
 	}
 
-	public boolean getBit(int index) {
-		// TODO
-		return false;
+	public int getBit(int index) {
+		byte b = buffer.get(index / 8);
+		byte bitMask = (byte) ((0x00000080 >>> (index % 8)) & 0x000000FF);
+		return (b & bitMask) == 0? 0 : 1;
 	}
 
 	public ByteBuffer asByteBuffer() {
 		return buffer;  // FIXME: return a copy?
 	}
 
+	public int getNextIndex() {
+		return this.nextIndex;
+	}
+
 	public int length() {
 		return length;
+	}
+
+	@Override
+	public String toString() {  // not very nice; only meant for debugging
+		char[] array = new char[nextIndex];
+		for (int i = 0; i < nextIndex; i++) {
+			array[i] = getBit(i) == 0? '0' : '1';
+		}
+		return String.valueOf(array);
 	}
 
 }
