@@ -9,14 +9,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 import cpsc445project.BWTIndex;
-import cpsc445project.BWTIndexBuilder;
 import cpsc445project.SimpleBWTIndexBuilder;
 
 public class SimpleBWTIndexBuilderTest {
 
 	private static List<Character> alphabet = new ArrayList<Character>();
 	private static String text = "abaaba";
-	private static BWTIndexBuilder builder = new SimpleBWTIndexBuilder();
+	private static SimpleBWTIndexBuilder builder = new SimpleBWTIndexBuilder();
 
 	@Before
 	public void buildAlphabet() {
@@ -35,6 +34,12 @@ public class SimpleBWTIndexBuilderTest {
 		assertTrue(bwt.get(4) == '\0');
 		assertTrue(bwt.get(5) == 'a');
 		assertTrue(bwt.get(6) == 'a');
+	}
+
+	@Test
+	public void testRunLengthEncoding() {
+		assertTrue(builder.getRunLengthEncoding((short) 5) == 1);
+		assertTrue(builder.getRunLengthEncoding((short) 7) == 0);
 	}
 
 }
