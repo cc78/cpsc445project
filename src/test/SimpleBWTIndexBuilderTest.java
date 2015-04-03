@@ -9,18 +9,30 @@ import org.junit.Before;
 import org.junit.Test;
 
 import cpsc445project.BWTIndex;
+import cpsc445project.BitBuffer;
+import cpsc445project.SimpleBWTIndex;
 import cpsc445project.SimpleBWTIndexBuilder;
 
 public class SimpleBWTIndexBuilderTest {
 
-	private static List<Character> alphabet = new ArrayList<Character>();
+	private static List<Character> alphabet;
+	private static List<Character> bwtAlphabet = new ArrayList<Character>();
 	private static String text = "abaaba";
 	private static SimpleBWTIndexBuilder builder = new SimpleBWTIndexBuilder();
 
 	@Before
 	public void buildAlphabet() {
+		alphabet = new ArrayList<Character>();
 		alphabet.add('a');
 		alphabet.add('b');
+	}
+
+	@Before
+	public void buildBWTAlphabet() {
+		bwtAlphabet = new ArrayList<Character>();
+		bwtAlphabet.add('\0');
+		bwtAlphabet.add('a');
+		bwtAlphabet.add('b');
 	}
 
 	@Test
@@ -36,10 +48,17 @@ public class SimpleBWTIndexBuilderTest {
 		assertTrue(bwt.get(6) == 'a');
 	}
 
+	//@Test
+	/*public void testRunLengthEncoding() {
+		assertTrue(builder.getRunLengthEncoding(5).equals("01"));
+		assertTrue(builder.getRunLengthEncoding(7).equals("000"));
+	}*/
+
 	@Test
-	public void testRunLengthEncoding() {
-		assertTrue(builder.getRunLengthEncoding((short) 5) == 1);
-		assertTrue(builder.getRunLengthEncoding((short) 7) == 0);
+	public void testbuildBwtRLX() {
+		SimpleBWTIndex bwt = (SimpleBWTIndex) builder.build(text, alphabet);
+		BitBuffer bwtRLX = builder.buildBwtRLX(bwt.getBWTIndex(), bwtAlphabet);
+
 	}
 
 }

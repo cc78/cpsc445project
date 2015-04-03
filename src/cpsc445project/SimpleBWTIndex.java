@@ -14,7 +14,8 @@ public class SimpleBWTIndex implements BWTIndex {
 	private List<Character> alphabet;
 	private int[][] occ;
 
-	public SimpleBWTIndex(char[] index, Map<String, Integer> c, List<Character> alphabet, int[][] occ) {
+	public SimpleBWTIndex(char[] index, Map<String, Integer> c, List<Character> alphabet,
+			int[][] occ) {
 		this.index = index;
 		this.c = c;
 		this.alphabet = alphabet;
@@ -35,6 +36,10 @@ public class SimpleBWTIndex implements BWTIndex {
 	@Override
 	public int size() {
 		return index.length;
+	}
+
+	public char[] getBWTIndex() {
+		return index;
 	}
 
 	private int[] getSARange(int i, char[] suffix, char z) {
