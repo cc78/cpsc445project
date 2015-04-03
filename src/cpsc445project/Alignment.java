@@ -17,9 +17,10 @@ public class Alignment {
 		alphabet.add('t');
 		alphabet.add('g');
 		BWTIndex bwt = builder.build("actg", alphabet);
+		BWTIndex rbwt = builder.build("gtca", alphabet);
 		
-		Alignment a = new Alignment(bwt, "at", alphabet);
-		a.computeAlignment();
+		Alignment a = new Alignment(bwt, "at");
+		a.computeAlignment(rbwt);
 	}
 
 	
@@ -37,7 +38,7 @@ public class Alignment {
 	ListMatrix N3;
 	List<Character> alphabet;
 	
-	public Alignment(BWTIndex bwt, String pattern, List<Character> alphabet) {
+	public Alignment(BWTIndex bwt, String pattern) {
 		this.bwt = bwt;
 		this.pattern = pattern;
 		this.N1 = new ListMatrix();
@@ -46,13 +47,15 @@ public class Alignment {
 		this.N = new ListMatrix();
 	}	
 		
-	public void computeAlignment() {
+	public void computeAlignment(BWTIndex rbwt) {
 
 		int n = bwt.size();
 
 		//Using 0 indexing, where 0 = first character in string
 						
 		int depth = 0;
+		char[] curString = new char[n];
+		curString[0] = '\0';
 		
 		for (int j=-1; j<=pattern.length(); j++) {
 				N.set(0,j, 0);
@@ -70,11 +73,11 @@ public class Alignment {
 			//align with current prefix
 //			localAlignment(i);
 			boolean isUp = true;
-			for (Character c : alphabet) {
+			for (Character c : bwt.getAlphabet()) {
 				//given the SA range of the current node, push on the min SA of its children
 				//do edge check
-				if (true) {
-//					stack.push(c);
+				if (rbwt.isSuffix(i, curString, c)) {
+					System.out.println(c);
 					stack.push(1);
 					isUp = false;
 				}

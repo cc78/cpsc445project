@@ -1,5 +1,8 @@
 package cpsc445project;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class CompressedBWTIndex implements BWTIndex {
 
 	@Override
@@ -17,5 +20,9 @@ public class CompressedBWTIndex implements BWTIndex {
 		return false;
 	}
 
-
+	public List<Character> getAlphabet() {
+		return new ArrayList<Character>();
+		
+	}
+	
 }

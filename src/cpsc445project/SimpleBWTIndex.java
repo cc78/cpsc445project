@@ -43,4 +43,9 @@ public class SimpleBWTIndex implements BWTIndex {
 
 		return new int[] {p, q};
 	}
+	
+	public List<Character> getAlphabet() {
+		return this.alphabet;
+		
+	}
 }
