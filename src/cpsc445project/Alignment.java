@@ -1,7 +1,6 @@
 package cpsc445project;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
 
@@ -37,7 +36,6 @@ public class Alignment {
 	ListMatrix N1;
 	ListMatrix N2;
 	ListMatrix N3;
-	List<Character> alphabet;
 	
 	public Alignment(BWTIndex bwt, String pattern) {
 		this.bwt = bwt;

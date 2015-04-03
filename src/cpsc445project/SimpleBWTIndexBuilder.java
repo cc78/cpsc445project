@@ -1,15 +1,12 @@
 package cpsc445project;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
-import cpsc445project.BWTIndex;
-import cpsc445project.BWTIndexBuilder;
-import cpsc445project.SimpleBWTIndex;
 
 /*
  *  Provides a simple but inefficient method for building a BWTIndex.
@@ -37,8 +34,9 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 		Map<String, Integer> c = countLesserOccurrences(text, alphabet);
 
 		/* construct occ */
-//		int[][] occ = countOccurrencesByIndex(bwt, alphabet); //t$a
-		int[][] occ = {
+//		int[][] occ = countOccurrencesByIndex(bwt, alphabet); 
+		//int[][] occ = new int[0][0];  // placeholder
+		int[][] occ = { //t$a for occ[a],occ[c],occ[t],occ[g]
 				{0, 0, 1}, 
 				{0, 0, 0},
 				{0, 1, 0},
@@ -46,6 +44,7 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 		};
 
 		return new SimpleBWTIndex(bwt, c, alphabet, occ);
+
 	}
 
 	private TreeMap<String, Integer> buildSuffixArray(String text) {
@@ -107,28 +106,46 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 
 		return occ;
 	}
-	
+
 	/*
 	 * Compress BWT as per Ferragina and Manzini (2005). (Required for building occ.)
+	 * Note: assumes alphabet size <= 127
 	 */
 	private void bwtRLX(char[] bwt, List<Character> alphabet) {
-		List<Integer> mtf = new ArrayList<Integer>(bwt.length);
+		// TODO: throw exception if alphabet is too large
+		BitSet bwtRLX = new BitSet();
+		List<Short> mtf = new ArrayList<Short>(bwt.length);
 		Collections.sort(alphabet);
-		
+
 		/* move-to-front transform */
 		for (int i = 0; i < bwt.length; i++) {
 			char c = bwt[i];
-			int mtfValue = alphabet.indexOf(c);
+			short mtfValue = (short) alphabet.indexOf(c);
 			mtf.add(i, mtfValue);
 			// move c to the front of alphabet
 			alphabet.remove(mtfValue);
 			alphabet.add(0, c);
 		}
-		
-		/* encode each run of 0's in mtf using run-length encoder */
-		// TODO
-		
-		
+
+		/* perform steps (2) and (3) of the algorithm simultaneously */
+		for (int i = 0; i < mtf.size(); i++) {
+			int count = 0;
+			short mtfValue = mtf.get(i);
+			if (mtfValue > 0) {
+				int zeros = (int) Math.floor(Math.log10(mtfValue + 1)/Math.log10(2));
+			} else {
+				// TODO: encode a run of 0's
+			}
+		}
+	}
+
+	// FIXME: return type?
+	public short getRunLengthEncoding(short runLength) {
+		String str =  Integer.toBinaryString(runLength + 1);
+		String reversed = new StringBuilder(str).reverse().toString();
+		short rle = (short) (Short.valueOf(reversed, 2) >>> 1);  // drop the rightmost bit
+		//short rle = (Short.valueOf(reversed));  // drop the rightmost bit
+		return rle;
 	}
 
 }
