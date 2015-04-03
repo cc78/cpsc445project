@@ -95,6 +95,11 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 		List<Character> bwtAlphabet = new ArrayList<Character>(alphabet);
 		bwtAlphabet.add('\0');
 
+		// FIXME: is there a better way?
+		if (!alphabet.contains('\0')) {
+			alphabet.add('\0');
+		}
+
 		BitBuffer bwtRLX = buildBwtRLX(bwt, alphabet);
 
 		int[][] occ = { //t$a for occ[a],occ[c],occ[t],occ[g] aaaaact$g
@@ -113,11 +118,10 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 	 * Note: assumes alphabet size <= 127
 	 */
 	public BitBuffer buildBwtRLX(char[] bwt, List<Character> alphabet) {
-		// TODO: throw exception if alphabet is too large?
-		// TODO: fix asymptotic size calculation
-		int size = 5 * bwt.length +
+		// FIXME: asymptotic size calculation
+		int asymptoticSize = 5 * bwt.length +
 				(int) Math.floor(Math.log(bwt.length)/Math.log(2));
-		BitBuffer bwtRLX = new BitBuffer(size);
+		BitBuffer bwtRLX = new BitBuffer(asymptoticSize);
 		List<Integer> mtf = new ArrayList<Integer>(bwt.length);
 		Collections.sort(alphabet);
 
@@ -135,10 +139,9 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 		for (int i = 0; i < mtf.size(); i++) {
 			int mtfValue = mtf.get(i);
 			if (mtfValue > 0) {
-				int nextIndex = bwtRLX.getNextIndex();
 				int zeros = (int) Math.floor(Math.log10(mtfValue + 1)/Math.log10(2));
 				for (int j = 0; j < zeros; j++) {
-					bwtRLX.setBit(nextIndex + j, false);
+					bwtRLX.setBit(bwtRLX.getNextIndex(), false);
 				}
 				bwtRLX.setBitsToBinaryValueOf(bwtRLX.getNextIndex(), mtfValue + 1);
 			} else {

@@ -58,7 +58,7 @@ public class SimpleBWTIndexBuilderTest {
 	public void testbuildBwtRLX() {
 		SimpleBWTIndex bwt = (SimpleBWTIndex) builder.build(text, alphabet);
 		BitBuffer bwtRLX = builder.buildBwtRLX(bwt.getBWTIndex(), bwtAlphabet);
-
+		assertTrue(bwtRLX.toString().equals("0100111001001101010"));
 	}
 
 }
