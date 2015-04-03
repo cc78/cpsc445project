@@ -37,7 +37,13 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 		Map<String, Integer> c = countLesserOccurrences(text, alphabet);
 
 		/* construct occ */
-		int[][] occ = countOccurrencesByIndex(bwt, alphabet);
+//		int[][] occ = countOccurrencesByIndex(bwt, alphabet); //t$a
+		int[][] occ = {
+				{0, 0, 1}, 
+				{0, 0, 0},
+				{0, 1, 0},
+				{0, 0, 0}					
+		};
 
 		return new SimpleBWTIndex(bwt, c, alphabet, occ);
 	}

@@ -19,6 +19,7 @@ public class Alignment {
 		BWTIndex bwt = builder.build("actg", alphabet);
 		BWTIndex rbwt = builder.build("gtca", alphabet);
 		
+		System.out.println(bwt.getAlphabet());
 		Alignment a = new Alignment(bwt, "at");
 		a.computeAlignment(rbwt);
 	}
@@ -50,6 +51,8 @@ public class Alignment {
 	public void computeAlignment(BWTIndex rbwt) {
 
 		int n = bwt.size();
+		int sa_left;
+		int sa_right;
 
 		//Using 0 indexing, where 0 = first character in string
 						
@@ -57,20 +60,20 @@ public class Alignment {
 		char[] curString = new char[n];
 		curString[0] = '\0';
 		
-		for (int j=-1; j<=pattern.length(); j++) {
+		for (int j=0; j<=pattern.length(); j++) {
 				N.set(0,j, 0);
 			}
 			
-		for (int i=0; i<=n; i++) {
-				N1.set(i,0,-(d + i * e));
-			}
+//		for (int i=0; i<=n; i++) {
+//				N1.set(i,0,-(d + i * e));
+//			}
 		
 		Stack<Integer> stack = new Stack<Integer>();
-		stack.push(0);
+		stack.push(1);
 		
 		while (!stack.empty()) {
 			int i = stack.pop();
-			//align with current prefix
+			//align pattern with current prefix
 //			localAlignment(i);
 			boolean isUp = true;
 			for (Character c : bwt.getAlphabet()) {
@@ -78,7 +81,7 @@ public class Alignment {
 				//do edge check
 				if (rbwt.isSuffix(i, curString, c)) {
 					System.out.println(c);
-					stack.push(1);
+					stack.push(i);
 					isUp = false;
 				}
 			}
@@ -98,7 +101,7 @@ public class Alignment {
 		for (int j=1; j<=pattern.length(); j++) {
 			
 		    //N1
-		    if (N.get(i-1, j-1) > 0) {
+		    if ((N.get(i-1, j-1) > 0) || (i == 0)) {
 		    	n1 = N.get(i-1, j-1) + scores.getScore(bwt.get(i-1),pattern.charAt(j-1));
 		    } else {
 		    	n1 = negInf;
