@@ -10,11 +10,11 @@ import java.util.Map;
 public class SimpleBWTIndex implements BWTIndex {
 
 	private char [] index = new char[0];
-	private Map<String, Integer> c;
+	private Map<Character, Integer> c;
 	private List<Character> alphabet;
 	private int[][] occ;
 
-	public SimpleBWTIndex(char[] index, Map<String, Integer> c, List<Character> alphabet, int[][] occ) {
+	public SimpleBWTIndex(char[] index, Map<Character, Integer> c, List<Character> alphabet, int[][] occ) {
 		this.index = index;
 		this.c = c;
 		this.alphabet = alphabet;
@@ -26,23 +26,42 @@ public class SimpleBWTIndex implements BWTIndex {
 		return index[i];
 	}
 
-	@Override
-	public boolean isSuffix(int i, char[] suffix, char z) {  // TODO
-		int[] saRange = getSARange(i, suffix, z);
-		return saRange[1] >= saRange[0];
-	}
 
 	@Override
 	public int size() {
 		return index.length;
 	}
 
-	private int[] getSARange(int i, char[] suffix, char z) {
-		int p = c.get(String.valueOf(z));
-		int q = occ[alphabet.indexOf(z)][i];
+//	private int[] getSARange(int i, char[] suffix, char z) {
+//		int p = c.get(z);
+//		int q = occ[alphabet.indexOf(z)][i];
+//
+//		return new int[] {p, q};
+//	}
+//
+	
+	public int[] isSuffixRange(int suffixstart, int suffixend, char z) {
+		
+		int first = c.get(z) + occ[alphabet.indexOf(z)][suffixstart-1] + 1;
+		int last = c.get(z) + occ[alphabet.indexOf(z)][suffixend];
 
-		return new int[] {p, q};
+		return new int[] {first, last};
 	}
+	
+	public int[] getSARange(int i, char[] pattern) {
+		i = pattern.length;
+		char charToGet = pattern[i-1];
+		int first = c.get(charToGet);
+		System.out.println(first);
+		int last = first;
+		while ((first <= last) && (i >= 2)) {
+			charToGet = pattern[i-1];
+			first = c.get(charToGet) + occ[alphabet.indexOf(charToGet)][first] + 1;
+			last = c.get(charToGet) + occ[alphabet.indexOf(charToGet)][last];
+		}
+		
+		return new int[] {first, last};
+	}	
 	
 	public List<Character> getAlphabet() {
 		return this.alphabet;

@@ -31,17 +31,11 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 		}
 
 		/* construct c */
-		Map<String, Integer> c = countLesserOccurrences(text, alphabet);
+		Map<Character, Integer> c = countLesserOccurrences(text, alphabet);
 
 		/* construct occ */
-//		int[][] occ = countOccurrencesByIndex(bwt, alphabet); 
+		int[][] occ = countOccurrencesByIndex(bwt, alphabet); 
 		//int[][] occ = new int[0][0];  // placeholder
-		int[][] occ = { //t$a for occ[a],occ[c],occ[t],occ[g]
-				{0, 0, 1}, 
-				{0, 0, 0},
-				{0, 1, 0},
-				{0, 0, 0}					
-		};
 
 		return new SimpleBWTIndex(bwt, c, alphabet, occ);
 
@@ -64,8 +58,8 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 	 * For each character c in the alphabet, count the number of occurrences in text
 	 * of characters that are lexicographically smaller than c.
 	 */
-	private Map<String, Integer> countLesserOccurrences(String text, List<Character> alphabet) {
-		HashMap<String, Integer> occurrences = new HashMap<String, Integer>();
+	private Map<Character, Integer> countLesserOccurrences(String text, List<Character> alphabet) {
+		HashMap<Character, Integer> occurrences = new HashMap<Character, Integer>();
 
 		for (char c : alphabet) {
 			int count = 0;
@@ -74,7 +68,7 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 					count += countMatches(text, d);
 				}
 			}
-			occurrences.put(String.valueOf(c), count);
+			occurrences.put(c, count);
 		}
 
 		return occurrences;
@@ -96,13 +90,20 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 	 * Build auxiliary data structure as described in Ferragina and Manzini (2005)
 	 * using word-size truncated recursion.
 	 */
-	private int[][] countOccurrencesByIndex(String text, List<Character> alphabet) {
-		int[][] occ = new int[alphabet.size()][text.length()];
+	private int[][] countOccurrencesByIndex(char[] text, List<Character> alphabet) {
+//		int[][] occ = new int[alphabet.size()][text.length];
 
 		List<Character> bwtAlphabet = new ArrayList<Character>(alphabet);
 		bwtAlphabet.add('\0');
-
 		// TODO
+		
+		int[][] occ = { //t$a for occ[a],occ[c],occ[t],occ[g] aaaaact$g
+				{1, 2, 3, 4, 5, 5, 5, 5, 5}, 
+				{0, 0, 0, 0, 0, 1, 1, 1, 1},
+				{0, 0, 0, 0, 0, 0, 1, 1, 1},
+				{0, 0, 0, 0, 0, 0, 0, 0, 1},
+				{0, 0, 0, 0, 0, 0, 0, 1, 0},	
+				};
 
 		return occ;
 	}

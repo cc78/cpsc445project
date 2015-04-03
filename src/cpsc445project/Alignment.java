@@ -15,10 +15,9 @@ public class Alignment {
 		alphabet.add('c');
 		alphabet.add('t');
 		alphabet.add('g');
-		BWTIndex bwt = builder.build("actg", alphabet);
-		BWTIndex rbwt = builder.build("gtca", alphabet);
+		BWTIndex bwt = builder.build("aaaaactg", alphabet);
+		BWTIndex rbwt = builder.build("gtcaaaaa", alphabet);
 		
-		System.out.println(bwt.getAlphabet());
 		Alignment a = new Alignment(bwt, "at");
 		a.computeAlignment(rbwt);
 	}
@@ -49,8 +48,8 @@ public class Alignment {
 	public void computeAlignment(BWTIndex rbwt) {
 
 		int n = bwt.size();
-		int sa_left;
-		int sa_right;
+		int sa_left = 1;
+		int sa_right = n-1;
 
 		//Using 0 indexing, where 0 = first character in string
 						
@@ -77,8 +76,11 @@ public class Alignment {
 			for (Character c : bwt.getAlphabet()) {
 				//given the SA range of the current node, push on the min SA of its children
 				//do edge check
-				if (rbwt.isSuffix(i, curString, c)) {
-					System.out.println(c);
+				int[] newRange = rbwt.isSuffixRange(sa_left, sa_right, c);
+				if (newRange[0] < newRange[1]) {
+					sa_left = newRange[0];
+					sa_right = newRange[1];
+					System.out.println(sa_left + "-" + sa_right);
 					stack.push(i);
 					isUp = false;
 				}
@@ -97,7 +99,8 @@ public class Alignment {
 		double n2;
 		double n3;
 		for (int j=1; j<=pattern.length(); j++) {
-			
+			System.out.println(bwt.get(i));
+			System.out.println(pattern.charAt(j-1));
 		    //N1
 		    if ((N.get(i-1, j-1) > 0) || (i == 0)) {
 		    	n1 = N.get(i-1, j-1) + scores.getScore(bwt.get(i-1),pattern.charAt(j-1));

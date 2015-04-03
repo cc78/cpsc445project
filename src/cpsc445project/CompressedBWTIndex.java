@@ -16,8 +16,8 @@ public class CompressedBWTIndex implements BWTIndex {
 	};
 
 	@Override
-	public boolean isSuffix(int i, char[] suffix, char z) {  // TODO
-		return false;
+	public int[] isSuffixRange(int suffixstart, int suffixend, char z) {  // TODO
+		return new int[0]; //TODO
 	}
 
 	public List<Character> getAlphabet() {
@@ -25,4 +25,7 @@ public class CompressedBWTIndex implements BWTIndex {
 		
 	}
 	
+	public int[] getSARange(int i, char[] suffix) {
+		return new int[0]; //TODO
+	}
 }
