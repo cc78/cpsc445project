@@ -1,7 +1,6 @@
 package cpsc445project;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -34,7 +33,7 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 		Map<Character, Integer> c = countLesserOccurrences(text, alphabet);
 
 		/* construct occ */
-		int[][] occ = countOccurrencesByIndex(bwt, alphabet); 
+		int[][] occ = countOccurrencesByIndex("", bwt, alphabet); 
 		//int[][] occ = new int[0][0];  // placeholder
 
 		return new SimpleBWTIndex(bwt, c, alphabet, occ);
@@ -90,13 +89,14 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 	 * Build auxiliary data structure as described in Ferragina and Manzini (2005)
 	 * using word-size truncated recursion.
 	 */
-	private int[][] countOccurrencesByIndex(char[] text, List<Character> alphabet) {
-//		int[][] occ = new int[alphabet.size()][text.length];
+	private int[][] countOccurrencesByIndex(String text, char[] bwt, List<Character> alphabet) {
+//		int[][] occ = new int[alphabet.size()][text.length()];
 
 		List<Character> bwtAlphabet = new ArrayList<Character>(alphabet);
 		bwtAlphabet.add('\0');
-		// TODO
-		
+
+		BitBuffer bwtRLX = buildBwtRLX(bwt, alphabet);
+
 		int[][] occ = { //t$a for occ[a],occ[c],occ[t],occ[g] aaaaact$g
 				{1, 2, 3, 4, 5, 5, 5, 5, 5}, 
 				{0, 0, 0, 0, 0, 1, 1, 1, 1},
@@ -104,7 +104,7 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 				{0, 0, 0, 0, 0, 0, 0, 0, 1},
 				{0, 0, 0, 0, 0, 0, 0, 1, 0},	
 				};
-
+		
 		return occ;
 	}
 
@@ -112,16 +112,19 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 	 * Compress BWT as per Ferragina and Manzini (2005). (Required for building occ.)
 	 * Note: assumes alphabet size <= 127
 	 */
-	private void bwtRLX(char[] bwt, List<Character> alphabet) {
-		// TODO: throw exception if alphabet is too large
-		BitSet bwtRLX = new BitSet();
-		List<Short> mtf = new ArrayList<Short>(bwt.length);
+	public BitBuffer buildBwtRLX(char[] bwt, List<Character> alphabet) {
+		// TODO: throw exception if alphabet is too large?
+		// TODO: fix asymptotic size calculation
+		int size = 5 * bwt.length +
+				(int) Math.floor(Math.log(bwt.length)/Math.log(2));
+		BitBuffer bwtRLX = new BitBuffer(size);
+		List<Integer> mtf = new ArrayList<Integer>(bwt.length);
 		Collections.sort(alphabet);
 
 		/* move-to-front transform */
 		for (int i = 0; i < bwt.length; i++) {
 			char c = bwt[i];
-			short mtfValue = (short) alphabet.indexOf(c);
+			int mtfValue = alphabet.indexOf(c);
 			mtf.add(i, mtfValue);
 			// move c to the front of alphabet
 			alphabet.remove(mtfValue);
@@ -130,23 +133,37 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 
 		/* perform steps (2) and (3) of the algorithm simultaneously */
 		for (int i = 0; i < mtf.size(); i++) {
-			int count = 0;
-			short mtfValue = mtf.get(i);
+			int mtfValue = mtf.get(i);
 			if (mtfValue > 0) {
+				int nextIndex = bwtRLX.getNextIndex();
 				int zeros = (int) Math.floor(Math.log10(mtfValue + 1)/Math.log10(2));
+				for (int j = 0; j < zeros; j++) {
+					bwtRLX.setBit(nextIndex + j, false);
+				}
+				bwtRLX.setBitsToBinaryValueOf(bwtRLX.getNextIndex(), mtfValue + 1);
 			} else {
-				// TODO: encode a run of 0's
+				int runLength = 1;
+				// advance to the end of the run of 0's
+				while (i + 1 < mtf.size() && mtf.get(i + 1) == 0) {
+					runLength++;
+					i++;
+				}
+				String rle = getRunLengthEncoding(runLength);
+				for (int k = 0; k < rle.length(); k++) {
+					int value = rle.charAt(k) == '0'? 2 : 3;
+					bwtRLX.setBitsToBinaryValueOf(bwtRLX.getNextIndex(), value);
+				}
 			}
 		}
+
+		return bwtRLX;
 	}
 
-	// FIXME: return type?
-	public short getRunLengthEncoding(short runLength) {
+	private String getRunLengthEncoding(int runLength) {
+		// Note: will break if input < 1 (but this should never really happen)
 		String str =  Integer.toBinaryString(runLength + 1);
 		String reversed = new StringBuilder(str).reverse().toString();
-		short rle = (short) (Short.valueOf(reversed, 2) >>> 1);  // drop the rightmost bit
-		//short rle = (Short.valueOf(reversed));  // drop the rightmost bit
-		return rle;
+		return reversed.substring(0, reversed.length() - 1);  // drop last position
 	}
 
 }

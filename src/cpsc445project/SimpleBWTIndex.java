@@ -32,16 +32,20 @@ public class SimpleBWTIndex implements BWTIndex {
 		return index.length;
 	}
 
-//	private int[] getSARange(int i, char[] suffix, char z) {
-//		int p = c.get(z);
-//		int q = occ[alphabet.indexOf(z)][i];
-//
-//		return new int[] {p, q};
-//	}
-//
+	public char[] getBWTIndex() {
+		return index;
+	}
+
+	//private int[] getSARange(int i, char[] suffix, char z) {
+		//int p = c.get(z);
+		//int q = occ[alphabet.indexOf(z)][i];
+		//
+		//return new int[] {p, q};
+	//}
+	//
 	
 	public int[] isSuffixRange(int suffixstart, int suffixend, char z) {
-		
+	
 		int first = c.get(z) + occ[alphabet.indexOf(z)][suffixstart-1] + 1;
 		int last = c.get(z) + occ[alphabet.indexOf(z)][suffixend];
 
