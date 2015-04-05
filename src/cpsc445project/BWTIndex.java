@@ -5,7 +5,7 @@ import java.util.List;
 public interface BWTIndex {
 
 	char get(int i);
-	int[] isSuffixRange(int suffixstart, int suffixend, char z) ;
+	int[] getSuffixRange(int suffixstart, int suffixend, char z) ;
 	int size();
 	List<Character> getAlphabet();
 	int[] getSARange(int i, char[] suffix);

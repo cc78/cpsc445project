@@ -1,5 +1,6 @@
 package cpsc445project;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -9,23 +10,27 @@ import java.util.Map;
  */
 public class SimpleBWTIndex implements BWTIndex {
 
-	private char [] index = new char[0];
-	private Map<Character, Integer> c;
+	private char [] index;
 	private List<Character> alphabet;
+	private Map<Character, Integer> c;
+	private int bucketSize;
 	private int[][] occ;
+	private int[][] nOcc;  // nOcc[i][c] stores the number of occurrences of c in bwt[0, i * bucketSize^2 - 1]
 
-	public SimpleBWTIndex(char[] index, Map<Character, Integer> c, List<Character> alphabet, int[][] occ) {
+	public SimpleBWTIndex(char[] index, Map<Character, Integer> c, List<Character> alphabet,
+			int bucketSize, int[][] nOcc, int[][] occ) {
 		this.index = index;
-		this.c = c;
 		this.alphabet = alphabet;
+		this.c = c;
+		this.bucketSize = bucketSize;
 		this.occ = occ;
+		this.nOcc = nOcc;
 	}
 
 	@Override
 	public char get(int i) {
 		return index[i];
 	}
-
 
 	@Override
 	public int size() {
@@ -35,22 +40,34 @@ public class SimpleBWTIndex implements BWTIndex {
 	public char[] getBWTIndex() {
 		return index;
 	}
+	
+	public int getBucketSize() {
+		return bucketSize;
+	}
 
-	//private int[] getSARange(int i, char[] suffix, char z) {
-		//int p = c.get(z);
-		//int q = occ[alphabet.indexOf(z)][i];
-		//
-		//return new int[] {p, q};
-	//}
-	//
-	
-	public int[] isSuffixRange(int suffixstart, int suffixend, char z) {
-	
+	public int[] getSuffixRange(int suffixstart, int suffixend, char z) {
+		
 		int first = c.get(z) + occ[alphabet.indexOf(z)][suffixstart-1] + 1;
 		int last = c.get(z) + occ[alphabet.indexOf(z)][suffixend];
 
 		return new int[] {first, last};
 	}
+	
+	public int getNumberOfOccurrences(char c, int q) {
+		// TODO: these could be calculated on initialization ... ? same with bucket size 
+		int firstPartition = (int) Math.pow(bucketSize, 2) * (index.length / (int) Math.pow(bucketSize, 2)) - 1;  // end index of first partition
+		int secondPartition = firstPartition + bucketSize * ((index.length - firstPartition) / bucketSize) - 1;   // end index of second partition
+		
+		//return getOccInFirstPartition() + getOccInSecondPartition + getOccInLastPartition();
+		
+		return 0;
+	}
+	
+	private int getOccInFirstPartition(char c, int lastIndex) {
+		
+		return 0;
+	}
+
 	
 	public int[] getSARange(int i, char[] pattern) {
 		i = pattern.length;
@@ -68,7 +85,7 @@ public class SimpleBWTIndex implements BWTIndex {
 	}	
 	
 	public List<Character> getAlphabet() {
-		return this.alphabet;
-		
+		return this.alphabet;  // FIXME? return a copy?		
 	}
+	
 }

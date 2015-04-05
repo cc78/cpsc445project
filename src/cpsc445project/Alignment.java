@@ -76,7 +76,7 @@ public class Alignment {
 			for (Character c : bwt.getAlphabet()) {
 				//given the SA range of the current node, push on the min SA of its children
 				//do edge check
-				int[] newRange = rbwt.isSuffixRange(sa_left, sa_right, c);
+				int[] newRange = rbwt.getSuffixRange(sa_left, sa_right, c);
 				if (newRange[0] < newRange[1]) {
 					sa_left = newRange[0];
 					sa_right = newRange[1];

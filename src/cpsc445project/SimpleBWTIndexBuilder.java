@@ -30,6 +30,11 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 			}
 			i++;
 		}
+		
+		/* from this point on, alphabet should contain the null char */
+		if (!alphabet.contains('\0')) {
+			alphabet.add('\0');
+		}
 
 		/* construct c */
 		Map<Character, Integer> c = countLesserOccurrences(text, alphabet);
@@ -38,7 +43,10 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 		int[][] occ = countOccurrencesByIndex("", bwt, alphabet); 
 		//int[][] occ = new int[0][0];  // placeholder
 
-		return new SimpleBWTIndex(bwt, c, alphabet, occ);
+		int bucketSize = (int) Math.floor(Math.log(bwt.length)/Math.log(2));
+		int[][] nOcc = computeNOcc(bwt, alphabet, bucketSize);
+		
+		return new SimpleBWTIndex(bwt, c, alphabet, bucketSize, nOcc, occ);
 
 	}
 
@@ -96,31 +104,55 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 	 * using word-size truncated recursion.
 	 */
 	private int[][] countOccurrencesByIndex(String text, char[] bwt, List<Character> alphabet) {
-//		int[][] occ = new int[alphabet.size()][text.length()];
-
+		// FIXME: is there a better way? i.e. will the alphabet already contain '\0'?
 		List<Character> bwtAlphabet = new ArrayList<Character>(alphabet);
-		bwtAlphabet.add('\0');
-
-		// FIXME: is there a better way?
-		if (!alphabet.contains('\0')) {
-			alphabet.add('\0');
+		if (!bwtAlphabet.contains('\0')) {
+			bwtAlphabet.add('\0');
 		}
-
-		// need to (logically) partition bwt
+		
+		int[][] occ = new int[alphabet.size()][text.length()];
+		
+		/* (logically) partition bwt */
 		int bucketSize = (int) Math.floor(Math.log(bwt.length)/Math.log(2));
 		int nBuckets = (int) Math.ceil(bwt.length / Math.floor(Math.log(bwt.length)/Math.log(2)));
-		
+
+		/* build compressed bwt */
 		CompressedBWTIndex bwtRLX = bwtRLXBuilder.buildBwtRLX(bwt, alphabet, nBuckets, bucketSize);
 
-		int[][] occ = { //t$a for occ[a],occ[c],occ[t],occ[g] aaaaact$g
+		/* build other auxiliary structures required for retrieving occ */
+		
+		
+		/*int[][] occ = { //t$a for occ[a],occ[c],occ[t],occ[g] aaaaact$g
 				{1, 2, 3, 4, 5, 5, 5, 5, 5}, 
 				{0, 0, 0, 0, 0, 1, 1, 1, 1},
 				{0, 0, 0, 0, 0, 0, 1, 1, 1},
 				{0, 0, 0, 0, 0, 0, 0, 0, 1},
 				{0, 0, 0, 0, 0, 0, 0, 1, 0},	
-				};
+				};*/
 		
 		return occ;
 	}
 
+	private int[][] computeNOcc(char[] index, List<Character> alphabet, int bucketSize) {
+		int[][] nOcc = new int[alphabet.size()][index.length / (int) Math.pow(bucketSize, 2) + 1];  // FIXME? last bucket won't really be needed
+		Collections.sort(alphabet);  // just in case 
+		
+		int bucket = 0;
+		for (int i = 0; i < index.length; i++) {
+			if (i == (bucket + 1) * (int) Math.pow(bucketSize, 2)) {
+				for (int j = 0; j < alphabet.size(); j++) {
+					nOcc[j][bucket + 1] = nOcc[j][bucket];
+				}
+				bucket++;
+			}
+			for (int k = 0; k < alphabet.size(); k++) {
+				if (index[i] == alphabet.get(k)) {
+					nOcc[k][bucket] += 1;
+					break;
+				}
+			}
+		}
+		return nOcc;
+	}
+	
 }

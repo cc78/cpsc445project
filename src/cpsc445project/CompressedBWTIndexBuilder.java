@@ -77,7 +77,7 @@ public class CompressedBWTIndexBuilder {
 			}
 		}
 		
-		return new CompressedBWTIndex(bwtRLX, bwtRLXBoundaries, leadingZeroes);
+		return new CompressedBWTIndex(bwtRLX, bucketSize, bwtRLXBoundaries, leadingZeroes);
 	}
 
 	private String getRunLengthEncoding(int runLength) {
