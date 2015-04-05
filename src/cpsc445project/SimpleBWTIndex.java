@@ -15,16 +15,18 @@ public class SimpleBWTIndex implements BWTIndex {
 	private Map<Character, Integer> c;
 	private int bucketSize;
 	private int[][] occ;
-	private int[][] nOcc;  // nOcc[i][c] stores the number of occurrences of c in bwt[0, i * bucketSize^2 - 1]
+	private int[][] fpocc;  // see section 3.2 (i)
+	private int[][] spocc;  // see section 3.2 (ii)
 
 	public SimpleBWTIndex(char[] index, Map<Character, Integer> c, List<Character> alphabet,
-			int bucketSize, int[][] nOcc, int[][] occ) {
+			int bucketSize, int[][] fpocc, int[][] spocc, int[][] occ) {
 		this.index = index;
 		this.alphabet = alphabet;
-		this.c = c;
 		this.bucketSize = bucketSize;
+		this.c = c;
 		this.occ = occ;
-		this.nOcc = nOcc;
+		this.fpocc = fpocc;
+		this.spocc = spocc;
 	}
 
 	@Override

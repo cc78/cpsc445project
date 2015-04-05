@@ -44,9 +44,10 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 		//int[][] occ = new int[0][0];  // placeholder
 
 		int bucketSize = (int) Math.floor(Math.log(bwt.length)/Math.log(2));
-		int[][] nOcc = computeNOcc(bwt, alphabet, bucketSize);
+		int[][] fpocc = computeFpocc(bwt, alphabet, bucketSize);
+		int[][] spocc = computeSpocc(bwt, alphabet, bucketSize);
 		
-		return new SimpleBWTIndex(bwt, c, alphabet, bucketSize, nOcc, occ);
+		return new SimpleBWTIndex(bwt, c, alphabet, bucketSize, fpocc, spocc, occ);
 
 	}
 
@@ -133,26 +134,60 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 		return occ;
 	}
 
-	private int[][] computeNOcc(char[] index, List<Character> alphabet, int bucketSize) {
-		int[][] nOcc = new int[alphabet.size()][index.length / (int) Math.pow(bucketSize, 2) + 1];  // FIXME? last bucket won't really be needed
+	/*
+	 * Compute 'first prefix occ', see section 3.2 (i)
+	 */
+	private int[][] computeFpocc(char[] index, List<Character> alphabet, int bucketSize) {
+		int[][] occ = new int[alphabet.size()][index.length / (int) Math.pow(bucketSize, 2) + 1];  // FIXME?
 		Collections.sort(alphabet);  // just in case 
 		
 		int bucket = 0;
 		for (int i = 0; i < index.length; i++) {
 			if (i == (bucket + 1) * (int) Math.pow(bucketSize, 2)) {
 				for (int j = 0; j < alphabet.size(); j++) {
-					nOcc[j][bucket + 1] = nOcc[j][bucket];
+					occ[j][bucket + 1] = occ[j][bucket];
 				}
 				bucket++;
 			}
 			for (int k = 0; k < alphabet.size(); k++) {
 				if (index[i] == alphabet.get(k)) {
-					nOcc[k][bucket] += 1;
+					occ[k][bucket] += 1;
 					break;
 				}
 			}
 		}
-		return nOcc;
+		return occ;
+	}
+	
+	/*
+	 * Compute 'second prefix occ', see section 3.2 (ii)
+	 */
+	private int[][] computeSpocc(char[] index, List<Character> alphabet, int bucketSize) {
+		int[][] occ = new int[alphabet.size()][index.length / bucketSize + 1];  // FIXME?
+		Collections.sort(alphabet);
+		
+		int bucket = 0;
+		for (int i = 0; i < index.length; i++) {
+			if (i == (bucket + 1) * bucketSize) {
+				for (int j = 0; j < alphabet.size(); j++) {
+					occ[j][bucket + 1] = occ[j][bucket];
+				}
+				bucket++;
+			}
+			if (i == (bucket - 1) * (int) Math.pow(bucketSize, 2)) {
+				// crossed boundary; restart count
+				for (int j = 0; j < alphabet.size(); j++) {
+					occ[j][bucket] = 0;
+				}
+			}
+			for (int j = 0; j < alphabet.size(); j++) {
+				if (index[i] == alphabet.get(j)) {
+					occ[j][bucket] += 1;
+					break;
+				}
+			}
+		}
+		return occ;
 	}
 	
 }

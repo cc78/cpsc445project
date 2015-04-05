@@ -11,12 +11,14 @@ public class CompressedBWTIndex {
 	private int bucketSize;
 	private int[] bucketBoundaries;		// logical bucket boundaries (start index of each bucket)
 	private int[] leadingZeroes;		// number of leading zeroes in logical bucket not encoded in the bucket itself
+	private int[] cumulativeLength; 	// W[] from section 3.2
 	
 	public CompressedBWTIndex(BitBuffer bwtRLX, int bucketSize, int[] bucketBoundaries, int[] leadingZeroes) {
 		this.bwtRLX = bwtRLX;
 		this.bucketSize = bucketSize;
 		this.bucketBoundaries = bucketBoundaries;
 		this.leadingZeroes = leadingZeroes;
+		this.cumulativeLength = getCumulativeLengths();
 	}
 	
 	/*
@@ -42,8 +44,14 @@ public class CompressedBWTIndex {
 		return bwtRLX.toString();
 	}
 	
-	/*private int getFirstPartition(int maxLength) {
-		return (int) Math.pow(bucketSize, 2);
-	}*/
+	private int[] getCumulativeLengths() {
+		int[] cumulativeLength = new int[bucketBoundaries.length];
+		for (int i = 0; i < cumulativeLength.length - 1; i++) {
+			cumulativeLength[i] = bucketBoundaries[i + 1];
+		}
+		cumulativeLength[cumulativeLength.length - 1] = bwtRLX.length(); 
+		
+		return cumulativeLength;
+	}
 
 }
