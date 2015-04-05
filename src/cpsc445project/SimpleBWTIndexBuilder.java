@@ -58,31 +58,35 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 	 * of characters that are lexicographically smaller than c.
 	 */
 	private Map<Character, Integer> countLesserOccurrences(String text, List<Character> alphabet) {
-		HashMap<Character, Integer> occurrences = new HashMap<Character, Integer>();
-
+		Map<Character, Integer> lesserOccurrences = new HashMap<Character, Integer>();
+		Map<Character, Integer> occurrences = countMatches(text, alphabet);
+		
 		for (char c : alphabet) {
 			int count = 0;
 			for (char d : alphabet) {
 				if (d < c) {
-					count += countMatches(text, d);
+					count += occurrences.get(d);
 				}
 			}
-			occurrences.put(c, count);
+			lesserOccurrences.put(c, count);
 		}
 
-		return occurrences;
+		return lesserOccurrences;
 	}
 
-	private int countMatches(String text, char c) {
-		int count = 0;
+	private Map<Character, Integer> countMatches(String text, List<Character> alphabet) {
+		HashMap<Character, Integer> occurrences = new HashMap<Character, Integer>();
 		char[] myText = text.toCharArray();
 
-		for (char d : myText) {
-			if (d == c) {
-				count++;
-			}
+		for (char c : alphabet) {
+			occurrences.put(c, 0);
 		}
-		return count;
+		
+		for (char d : myText) {
+			occurrences.put(d, occurrences.get(d) + 1);
+		}
+		
+		return occurrences;
 	}
 
 	/*
