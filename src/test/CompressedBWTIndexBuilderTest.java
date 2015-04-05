@@ -38,6 +38,7 @@ public class CompressedBWTIndexBuilderTest {
 		// check leading zeroes
 		assertTrue(index1.getNumberOfLeadingZeroes(0) == 0);
 		assertTrue(index1.getNumberOfLeadingZeroes(1) == 0);
+		
 		/* case with runs of zeroes split between logical buckets */
 		CompressedBWTIndex index2 = builder.buildBwtRLX(bwt2, alphabet, 2, 4);  // 2 buckets of 4 and 3 items each
 		assertTrue(index2.toString().equals("010101010"));
@@ -47,6 +48,20 @@ public class CompressedBWTIndexBuilderTest {
 		// check leading zeroes
 		assertTrue(index2.getNumberOfLeadingZeroes(0) == 0);
 		assertTrue(index2.getNumberOfLeadingZeroes(1) == 3);
+		
+		/* test setting of width and remaningWidth */  // TODO: this test maybe should be elsewhere?
+		CompressedBWTIndex index3 = builder.buildBwtRLX(bwt1, alphabet, 4, 2);
+		assertTrue(index3.toString().equals("0100111001001101010"));
+		
+		assertTrue(index3.getWidthUpTo(0) == 6);
+		assertTrue(index3.getWidthUpTo(1) == 11);
+		assertTrue(index3.getWidthUpTo(2) == 17);
+		assertTrue(index3.getWidthUpTo(3) == 19);
+		
+		assertTrue(index3.getRemainingWidthUpTo(0) == 6);
+		assertTrue(index3.getRemainingWidthUpTo(1) == 11);
+		assertTrue(index3.getRemainingWidthUpTo(2) == 6);
+		assertTrue(index3.getRemainingWidthUpTo(3) == 18);
 	}
 	
 	//@Test

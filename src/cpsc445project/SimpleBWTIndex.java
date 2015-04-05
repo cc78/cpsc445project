@@ -7,6 +7,7 @@ import java.util.Map;
 /*
  * A simple version of the BWT index as described in Lam et al (2008):
  * 'Compressed indexing and local alignment of DNA.'
+ * Calculation of occ(c, q) from Ferragina and Manzini (2005). 
  */
 public class SimpleBWTIndex implements BWTIndex {
 
@@ -15,8 +16,8 @@ public class SimpleBWTIndex implements BWTIndex {
 	private Map<Character, Integer> c;
 	private int bucketSize;
 	private int[][] occ;
-	private int[][] fpocc;  // see section 3.2 (i)
-	private int[][] spocc;  // see section 3.2 (ii)
+	private int[][] fpocc;  // see section 3.2 (i), Ferragina and Manzini (2005)
+	private int[][] spocc;  // see section 3.2 (ii), Ferragina and Manzini (2005)
 
 	public SimpleBWTIndex(char[] index, Map<Character, Integer> c, List<Character> alphabet,
 			int bucketSize, int[][] fpocc, int[][] spocc, int[][] occ) {
