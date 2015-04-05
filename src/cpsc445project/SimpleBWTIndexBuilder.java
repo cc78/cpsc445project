@@ -13,6 +13,8 @@ import java.util.TreeMap;
  */
 public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 
+	private CompressedBWTIndexBuilder bwtRLXBuilder = new CompressedBWTIndexBuilder();
+	
 	@Override
 	public BWTIndex build(String text, List<Character> alphabet) {
 		/* build BWT */
@@ -104,7 +106,11 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 			alphabet.add('\0');
 		}
 
-		BitBuffer bwtRLX = buildBwtRLX(bwt, alphabet);
+		// need to (logically) partition bwt
+		int bucketSize = (int) Math.floor(Math.log(bwt.length)/Math.log(2));
+		int nBuckets = (int) Math.ceil(bwt.length / Math.floor(Math.log(bwt.length)/Math.log(2)));
+		
+		CompressedBWTIndex bwtRLX = bwtRLXBuilder.buildBwtRLX(bwt, alphabet, nBuckets, bucketSize);
 
 		int[][] occ = { //t$a for occ[a],occ[c],occ[t],occ[g] aaaaact$g
 				{1, 2, 3, 4, 5, 5, 5, 5, 5}, 
@@ -115,62 +121,6 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 				};
 		
 		return occ;
-	}
-
-	/*
-	 * Compress BWT as per Ferragina and Manzini (2005). (Required for building occ.)
-	 * Note: assumes alphabet size <= 127
-	 */
-	public BitBuffer buildBwtRLX(char[] bwt, List<Character> alphabet) {
-		// FIXME: asymptotic size calculation
-		int asymptoticSize = 5 * bwt.length +
-				(int) Math.floor(Math.log(bwt.length)/Math.log(2));
-		BitBuffer bwtRLX = new BitBuffer(asymptoticSize);
-		List<Integer> mtf = new ArrayList<Integer>(bwt.length);
-		Collections.sort(alphabet);
-
-		/* move-to-front transform */
-		for (int i = 0; i < bwt.length; i++) {
-			char c = bwt[i];
-			int mtfValue = alphabet.indexOf(c);
-			mtf.add(i, mtfValue);
-			// move c to the front of alphabet
-			alphabet.remove(mtfValue);
-			alphabet.add(0, c);
-		}
-
-		/* perform steps (2) and (3) of the algorithm simultaneously */
-		for (int i = 0; i < mtf.size(); i++) {
-			int mtfValue = mtf.get(i);
-			if (mtfValue > 0) {
-				int zeros = (int) Math.floor(Math.log10(mtfValue + 1)/Math.log10(2));
-				for (int j = 0; j < zeros; j++) {
-					bwtRLX.setBit(bwtRLX.getNextIndex(), false);
-				}
-				bwtRLX.setBitsToBinaryValueOf(bwtRLX.getNextIndex(), mtfValue + 1);
-			} else {
-				int runLength = 1;
-				// advance to the end of the run of 0's
-				while (i + 1 < mtf.size() && mtf.get(i + 1) == 0) {
-					runLength++;
-					i++;
-				}
-				String rle = getRunLengthEncoding(runLength);
-				for (int k = 0; k < rle.length(); k++) {
-					int value = rle.charAt(k) == '0'? 2 : 3;
-					bwtRLX.setBitsToBinaryValueOf(bwtRLX.getNextIndex(), value);
-				}
-			}
-		}
-
-		return bwtRLX;
-	}
-
-	private String getRunLengthEncoding(int runLength) {
-		// Note: will break if input < 1 (but this should never really happen)
-		String str =  Integer.toBinaryString(runLength + 1);
-		String reversed = new StringBuilder(str).reverse().toString();
-		return reversed.substring(0, reversed.length() - 1);  // drop last position
 	}
 
 }

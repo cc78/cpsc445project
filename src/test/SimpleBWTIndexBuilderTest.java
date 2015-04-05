@@ -1,5 +1,3 @@
-package test;
-
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -53,12 +51,5 @@ public class SimpleBWTIndexBuilderTest {
 		assertTrue(builder.getRunLengthEncoding(5).equals("01"));
 		assertTrue(builder.getRunLengthEncoding(7).equals("000"));
 	}*/
-
-	@Test
-	public void testbuildBwtRLX() {
-		SimpleBWTIndex bwt = (SimpleBWTIndex) builder.build(text, alphabet);
-		BitBuffer bwtRLX = builder.buildBwtRLX(bwt.getBWTIndex(), bwtAlphabet);
-		assertTrue(bwtRLX.toString().equals("0100111001001101010"));
-	}
 
 }
