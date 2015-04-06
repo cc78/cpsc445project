@@ -46,8 +46,8 @@ public class SimpleBWTIndex implements BWTIndex {
 	
 	public int[] isSuffixRange(int suffixstart, int suffixend, char z) {
 	
-		int first = c.get(z) + occ[alphabet.indexOf(z)][suffixstart-1] + 1;
-		int last = c.get(z) + occ[alphabet.indexOf(z)][suffixend];
+		int first = c.get(z) + occ[alphabet.indexOf(z)][suffixstart];
+		int last = c.get(z) + occ[alphabet.indexOf(z)][suffixend] - 1;
 
 		return new int[] {first, last};
 	}

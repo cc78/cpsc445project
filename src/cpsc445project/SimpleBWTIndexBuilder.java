@@ -95,7 +95,7 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 		List<Character> bwtAlphabet = new ArrayList<Character>(alphabet);
 		bwtAlphabet.add('\0');
 
-		BitBuffer bwtRLX = buildBwtRLX(bwt, alphabet);
+//		BitBuffer bwtRLX = buildBwtRLX(bwt, alphabet);
 
 		int[][] occ = { //t$a for occ[a],occ[c],occ[t],occ[g] aaaaact$g
 				{1, 2, 3, 4, 5, 5, 5, 5, 5}, 
