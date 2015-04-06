@@ -37,7 +37,7 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 		}
 
 		/* construct c */
-		Map<Character, Integer> c = countLesserOccurrences(text, alphabet);
+		Map<Character, Integer> c = countLesserOccurrences(text + '\0', alphabet);
 
 		/* construct occ */
 		int[][] occ = countOccurrencesByIndex(bwt, alphabet); 
@@ -100,6 +100,7 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 	 */
 	private int[][] countOccurrencesByIndex(char[] bwt, List<Character> alphabet) {
 		int[][] occ = new int[alphabet.size()][bwt.length];
+		Collections.sort(alphabet);
 		
 		for (int i = 0; i < bwt.length; i++) {
 			for (int j = 0; j < alphabet.size(); j++) {
