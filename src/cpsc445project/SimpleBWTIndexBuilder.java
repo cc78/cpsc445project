@@ -113,6 +113,5 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 		}
 		
 		return occ;
-	}
-	
+	}	
 }

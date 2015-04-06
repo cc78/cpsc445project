@@ -67,8 +67,8 @@ public class SimpleBWTIndex implements BWTIndex {
 		return new int[] {first, last};
 	}	
 	
-	/*public List<Character> getAlphabet() {
+	public List<Character> getAlphabet() {
 		return this.alphabet;  // FIXME? return a copy?		
-	}*/
+	}
 	
 }
