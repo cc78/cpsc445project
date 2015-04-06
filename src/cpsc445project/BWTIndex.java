@@ -8,5 +8,5 @@ public interface BWTIndex {
 	int[] getSuffixRange(int suffixstart, int suffixend, char z) ;
 	int size();
 	List<Character> getAlphabet();
-	int[] getSARange(int i, char[] suffix);
+//	int[] getSARange(int i, char[] suffix);
 }

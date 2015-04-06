@@ -39,33 +39,38 @@ public class SimpleBWTIndex implements BWTIndex {
 	}
 	
 	public int getOcc(char c, int q) {
-		return occ[alphabet.indexOf(c)][q];
+		try {
+			return occ[alphabet.indexOf(c)][q];
+		} catch (ArrayIndexOutOfBoundsException e) {
+			return 0;
+		}
 	}
 
 	public int[] getSuffixRange(int suffixstart, int suffixend, char z) {
 		
-		int first = c.get(z) + getOcc(z, suffixstart);
+		System.out.println(c.get(z));
+		int first = c.get(z) + getOcc(z, suffixstart -1);
 		int last = c.get(z) + getOcc(z, suffixend) - 1;
 
 		return new int[] {first, last};
 	}
 			
-	public int[] getSARange(int i, char[] pattern) {
-		i = pattern.length;
-		char charToGet = pattern[i-1];
-		int first = c.get(charToGet);
-		System.out.println(first);
-		int last = first;
-		while ((first <= last) && (i >= 2)) {
-			charToGet = pattern[i-1];
-			first = c.get(charToGet) + occ[alphabet.indexOf(charToGet)][first] + 1;
-			last = c.get(charToGet) + occ[alphabet.indexOf(charToGet)][last];
-			first = 0;
-			last = 0;
-		}
+//	public int[] getSARange(int i, char[] pattern) {
+//		i = pattern.length;
+//		char charToGet = pattern[i-1];
+//		int first = c.get(charToGet);
+//		System.out.println(first);
+//		int last = first;
+//		while ((first <= last) && (i >= 2)) {
+//			charToGet = pattern[i-1];
+//			first = c.get(charToGet) + occ[alphabet.indexOf(charToGet)][first] + 1;
+//			last = c.get(charToGet) + occ[alphabet.indexOf(charToGet)][last];
+//			first = 0;
+//			last = 0;
+//		}
 		
-		return new int[] {first, last};
-	}	
+//		return new int[] {first, last};
+//	}	
 	
 	public List<Character> getAlphabet() {
 		return this.alphabet;  // FIXME? return a copy?		
