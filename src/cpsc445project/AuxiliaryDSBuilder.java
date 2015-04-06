@@ -7,10 +7,12 @@ import java.util.List;
 public class AuxiliaryDSBuilder {
 
 	/*
-	 * Compress BWT as per Ferragina and Manzini (2005). (Required for building occ.)
-	 * TODO: move this method to ... ?
+	 * Compress BWT as per Ferragina and Manzini (2005).
+	 * Build other auxiliary data structures required for computing occ(c, q).
 	 */
-	public AuxiliaryDS buildBwtRLX(char[] bwt, List<Character> alphabet, int nBuckets, int bucketSize) {
+	public AuxiliaryDS build(char[] bwt, List<Character> alphabet, int nBuckets, int bucketSize) {
+		// int bucketSize = (int) Math.floor(Math.log10(bwt.length) / Math.log10(2));
+		// int nBuckets = (int) Math.ceil(((double) bwt.length) / bucketSize);
 		// FIXME: asymptotic size calculation
 		int asymptoticSize = 5 * bwt.length +
 				(int) Math.floor(Math.log(bwt.length)/Math.log(2));
@@ -77,7 +79,10 @@ public class AuxiliaryDSBuilder {
 			}
 		}
 		
-		return new AuxiliaryDS(bwtRLX, bucketSize, bwtRLXBoundaries, leadingZeroes);
+		int[][] fpocc = computeFpocc(bwt, alphabet, bucketSize);
+		int[][] spocc = computeSpocc(bwt, alphabet, bucketSize);
+				
+		return new AuxiliaryDS(bwtRLX, bucketSize, bwtRLXBoundaries, leadingZeroes, fpocc, spocc);
 	}
 
 	private String getRunLengthEncoding(int runLength) {
@@ -107,6 +112,62 @@ public class AuxiliaryDSBuilder {
 			sum += (Character.getNumericValue(chars[i]) + 1) * Math.pow(2, i);
 		}
 		return sum;
+	}
+	
+	/*
+	 * Compute 'first prefix occ', see section 3.2 (i)
+	 */
+	private int[][] computeFpocc(char[] index, List<Character> alphabet, int bucketSize) {
+		int[][] occ = new int[alphabet.size()][index.length / (int) Math.pow(bucketSize, 2) + 1];  // FIXME?
+		Collections.sort(alphabet);  // just in case 
+		
+		int bucket = 0;
+		for (int i = 0; i < index.length; i++) {
+			if (i == (bucket + 1) * (int) Math.pow(bucketSize, 2)) {
+				for (int j = 0; j < alphabet.size(); j++) {
+					occ[j][bucket + 1] = occ[j][bucket];
+				}
+				bucket++;
+			}
+			for (int k = 0; k < alphabet.size(); k++) {
+				if (index[i] == alphabet.get(k)) {
+					occ[k][bucket] += 1;
+					break;
+				}
+			}
+		}
+		return occ;
+	}
+	
+	/*
+	 * Compute 'second prefix occ', see section 3.2 (ii)
+	 */
+	private int[][] computeSpocc(char[] index, List<Character> alphabet, int bucketSize) {
+		int[][] occ = new int[alphabet.size()][index.length / bucketSize + 1];  // FIXME?
+		Collections.sort(alphabet);
+		
+		int bucket = 0;
+		for (int i = 0; i < index.length; i++) {
+			if (i == (bucket + 1) * bucketSize) {
+				for (int j = 0; j < alphabet.size(); j++) {
+					occ[j][bucket + 1] = occ[j][bucket];
+				}
+				bucket++;
+			}
+			if (i == (bucket - 1) * (int) Math.pow(bucketSize, 2)) {
+				// crossed boundary; restart count
+				for (int j = 0; j < alphabet.size(); j++) {
+					occ[j][bucket] = 0;
+				}
+			}
+			for (int j = 0; j < alphabet.size(); j++) {
+				if (index[i] == alphabet.get(j)) {
+					occ[j][bucket] += 1;
+					break;
+				}
+			}
+		}
+		return occ;
 	}
 	
 }

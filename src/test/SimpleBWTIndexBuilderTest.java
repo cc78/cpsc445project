@@ -34,6 +34,7 @@ public class SimpleBWTIndexBuilderTest {
 	@Test
 	public void testBuild() {
 		SimpleBWTIndex bwt = (SimpleBWTIndex) builder.build(text, alphabet);
+		
 		assertTrue(bwt.size() == 7);
 		assertTrue(bwt.get(0) == 'a');
 		assertTrue(bwt.get(1) == 'b');
@@ -43,8 +44,12 @@ public class SimpleBWTIndexBuilderTest {
 		assertTrue(bwt.get(5) == 'a');
 		assertTrue(bwt.get(6) == 'a');
 		
-		assertTrue(bwt.getBucketSize() == 2);
-
+		assertTrue(bwt.getOcc('a', 0) == 1);
+		assertTrue(bwt.getOcc('a', 1) == 1);
+		assertTrue(bwt.getOcc('a', 6) == 4);
+		assertTrue(bwt.getOcc('b', 0) == 0);
+		assertTrue(bwt.getOcc('b', 1) == 1);
+		assertTrue(bwt.getOcc('b', 6) == 2);
 	}
 	
 

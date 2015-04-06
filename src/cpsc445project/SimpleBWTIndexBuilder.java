@@ -40,18 +40,9 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 		Map<Character, Integer> c = countLesserOccurrences(text, alphabet);
 
 		/* construct occ */
-		//int[][] occ = countOccurrencesByIndex("", bwt, alphabet); 
-		//int[][] occ = new int[0][0];  // placeholder
-
-		int bucketSize = (int) Math.floor(Math.log(bwt.length)/Math.log(2));
-		int[][] fpocc = computeFpocc(bwt, alphabet, bucketSize);
-		int[][] spocc = computeSpocc(bwt, alphabet, bucketSize);
+		int[][] occ = countOccurrencesByIndex(bwt, alphabet); 
 		
-		int nBuckets = (int) Math.ceil(((double) bwt.length) / bucketSize);  // check this
-		AuxiliaryDSBuilder auxBuilder = new AuxiliaryDSBuilder();
-		AuxiliaryDS aux = auxBuilder.buildBwtRLX(bwt, alphabet, nBuckets, bucketSize);
-		
-		return new SimpleBWTIndex(bwt, c, alphabet, bucketSize, fpocc, spocc, aux);
+		return new SimpleBWTIndex(bwt, alphabet, c, occ);
 
 	}
 
@@ -105,92 +96,22 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 	}
 
 	/*
-	 * Build auxiliary data structure as described in Ferragina and Manzini (2005)
-	 * using word-size truncated recursion.
+	 * Build occ[c][q]
 	 */
-	private int[][] countOccurrencesByIndex(String text, char[] bwt, List<Character> alphabet) {
-		// FIXME: is there a better way? i.e. will the alphabet already contain '\0'?
-		List<Character> bwtAlphabet = new ArrayList<Character>(alphabet);
-		if (!bwtAlphabet.contains('\0')) {
-			bwtAlphabet.add('\0');
-		}
+	private int[][] countOccurrencesByIndex(char[] bwt, List<Character> alphabet) {
+		int[][] occ = new int[alphabet.size()][bwt.length];
 		
-		int[][] occ = new int[alphabet.size()][text.length()];
-		
-		/* (logically) partition bwt */
-		int bucketSize = (int) Math.floor(Math.log(bwt.length)/Math.log(2));
-		int nBuckets = (int) Math.ceil(bwt.length / Math.floor(Math.log(bwt.length)/Math.log(2)));
-
-		/* build compressed bwt */
-		AuxiliaryDS bwtRLX = bwtRLXBuilder.buildBwtRLX(bwt, alphabet, nBuckets, bucketSize);
-
-		/* build other auxiliary structures required for retrieving occ */
-		
-		
-		/*int[][] occ = { //t$a for occ[a],occ[c],occ[t],occ[g] aaaaact$g
-				{1, 2, 3, 4, 5, 5, 5, 5, 5}, 
-				{0, 0, 0, 0, 0, 1, 1, 1, 1},
-				{0, 0, 0, 0, 0, 0, 1, 1, 1},
-				{0, 0, 0, 0, 0, 0, 0, 0, 1},
-				{0, 0, 0, 0, 0, 0, 0, 1, 0},	
-				};*/
-		
-		return occ;
-	}
-
-	/*
-	 * Compute 'first prefix occ', see section 3.2 (i)
-	 */
-	private int[][] computeFpocc(char[] index, List<Character> alphabet, int bucketSize) {
-		int[][] occ = new int[alphabet.size()][index.length / (int) Math.pow(bucketSize, 2) + 1];  // FIXME?
-		Collections.sort(alphabet);  // just in case 
-		
-		int bucket = 0;
-		for (int i = 0; i < index.length; i++) {
-			if (i == (bucket + 1) * (int) Math.pow(bucketSize, 2)) {
-				for (int j = 0; j < alphabet.size(); j++) {
-					occ[j][bucket + 1] = occ[j][bucket];
-				}
-				bucket++;
-			}
-			for (int k = 0; k < alphabet.size(); k++) {
-				if (index[i] == alphabet.get(k)) {
-					occ[k][bucket] += 1;
-					break;
-				}
-			}
-		}
-		return occ;
-	}
-	
-	/*
-	 * Compute 'second prefix occ', see section 3.2 (ii)
-	 */
-	private int[][] computeSpocc(char[] index, List<Character> alphabet, int bucketSize) {
-		int[][] occ = new int[alphabet.size()][index.length / bucketSize + 1];  // FIXME?
-		Collections.sort(alphabet);
-		
-		int bucket = 0;
-		for (int i = 0; i < index.length; i++) {
-			if (i == (bucket + 1) * bucketSize) {
-				for (int j = 0; j < alphabet.size(); j++) {
-					occ[j][bucket + 1] = occ[j][bucket];
-				}
-				bucket++;
-			}
-			if (i == (bucket - 1) * (int) Math.pow(bucketSize, 2)) {
-				// crossed boundary; restart count
-				for (int j = 0; j < alphabet.size(); j++) {
-					occ[j][bucket] = 0;
-				}
-			}
+		for (int i = 0; i < bwt.length; i++) {
 			for (int j = 0; j < alphabet.size(); j++) {
-				if (index[i] == alphabet.get(j)) {
-					occ[j][bucket] += 1;
-					break;
+				if (i > 0) {
+					occ[j][i] = occ[j][i - 1];
+				}
+				if (bwt[i] == alphabet.get(j)) {
+					occ[j][i] += 1;
 				}
 			}
 		}
+		
 		return occ;
 	}
 	

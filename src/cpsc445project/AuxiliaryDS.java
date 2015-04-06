@@ -12,22 +12,20 @@ public class AuxiliaryDS {
 	private int[] leadingZeroes;		// number of leading zeroes in logical bucket not encoded in the bucket itself
 	private int[] widthUpTo; 			// W[] from section 3.2 (i)
 	private int[] remainingWidthUpTo;	// W'[] from section 3.2 (ii)
+	private int[][] fpocc;  			// see section 3.2 (i), Ferragina and Manzini (2005)
+	private int[][] spocc;  			// see section 3.2 (ii), Ferragina and Manzini (2005)
 
-	public AuxiliaryDS(BitBuffer bwtRLX, int bucketSize, int[] bucketBoundaries, int[] leadingZeroes) {
+	public AuxiliaryDS(BitBuffer bwtRLX, int bucketSize, int[] bucketBoundaries, int[] leadingZeroes,
+			int[][] fpocc, int[][] spocc) {
 		this.bwtRLX = bwtRLX;
 		this.bucketSize = bucketSize;
 		this.bucketBoundaries = bucketBoundaries;
 		this.leadingZeroes = leadingZeroes;
 		this.widthUpTo = setWidthUpTo();
 		this.remainingWidthUpTo = setRemainingWidthUpTo();
-	}
-
-	/*
-	 * Return Occ(c, q): the number of occurrences of c in bwt[0, q]
-	 */
-	public int getNumberOfOccurrences(char c, int q) {
-		// TODO
-		return 0;
+		this.fpocc = fpocc;
+		this.spocc =spocc;
+				
 	}
 
 	public int getBeginIndex(int bucket) {
@@ -45,6 +43,35 @@ public class AuxiliaryDS {
 
 	public int getRemainingWidthUpTo(int bucket) {
 		return remainingWidthUpTo[bucket];
+	}
+	
+	/*
+	 * Return Occ(c, q): the number of occurrences of c in bwt[0, q]
+	 * TODO: correction for runs of zeroes split between buckets ... ?
+	 */
+	public int getNumberOfOccurrences(char c, int q) {
+		int bwtBucket = (int) Math.floor(((double) q) / bucketSize);
+		int spIndex = q - bwtBucket * bucketSize;
+		int t = (int) Math.ceil(((double) bwtBucket) / bucketSize) - 1;  // FIXME check this -- probably OK as is?
+		
+		// occurrences of c in first partition; 3.2 (i)
+		int occFP = fpocc[c][t];  
+		
+		// occurrences of c in second partition; 3.2 (ii)
+		int occSP = 0;
+		if (bwtBucket % bucketSize != 0) {
+			occSP = spocc[c][bwtBucket - 1];
+		}
+		
+		// TODO: occurrences of c in third partition; 3.2 (iii)
+		int tpIndex;
+		if (bwtBucket % bucketSize == 0) {
+			tpIndex = getWidthUpTo(t); // check this
+		} else {
+			tpIndex = getWidthUpTo(t) + getRemainingWidthUpTo(bwtBucket);  // check this
+		}
+		
+		return occFP + occSP;
 	}
 	
 	public String toString() {
