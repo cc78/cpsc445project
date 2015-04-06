@@ -70,16 +70,16 @@ public class Alignment {
 		
 		while (!stack.empty()) {
 			char i = stack.pop();
-			System.out.println(depth);
 			curString.push(i);
 			System.out.println(curString);
 			//align pattern with current prefix
-			localAlignment(depth, i);
+//			localAlignment(depth, i);
 			boolean isUp = true;
 			for (Character c : bwt.getAlphabet()) {
 				//given the SA range of the current node, push on the min SA of its children
 				//do edge check
-				int[] newRange = rbwt.isSuffixRange(sa_ranges[depth][0], sa_ranges[depth][1], c);
+				
+				int[] newRange = rbwt.getSuffixRange(sa_ranges[depth][0], sa_ranges[depth][1], c);
 				if (newRange[0] <= newRange[1]) {
 					sa_left = newRange[0];
 					sa_right = newRange[1];

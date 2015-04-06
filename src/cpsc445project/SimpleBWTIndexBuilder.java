@@ -13,6 +13,8 @@ import java.util.TreeMap;
  */
 public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 
+	private AuxiliaryDSBuilder bwtRLXBuilder = new AuxiliaryDSBuilder();
+	
 	@Override
 	public BWTIndex build(String text, List<Character> alphabet) {
 		/* build BWT */
@@ -28,15 +30,28 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 			}
 			i++;
 		}
+		
+		/* from this point on, alphabet should contain the null char */
+		if (!alphabet.contains('\0')) {
+			alphabet.add('\0');
+		}
 
 		/* construct c */
 		Map<Character, Integer> c = countLesserOccurrences(text, alphabet);
 
 		/* construct occ */
-		int[][] occ = countOccurrencesByIndex("", bwt, alphabet); 
+		//int[][] occ = countOccurrencesByIndex("", bwt, alphabet); 
 		//int[][] occ = new int[0][0];  // placeholder
 
-		return new SimpleBWTIndex(bwt, c, alphabet, occ);
+		int bucketSize = (int) Math.floor(Math.log(bwt.length)/Math.log(2));
+		int[][] fpocc = computeFpocc(bwt, alphabet, bucketSize);
+		int[][] spocc = computeSpocc(bwt, alphabet, bucketSize);
+		
+		int nBuckets = (int) Math.ceil(((double) bwt.length) / bucketSize);  // check this
+		AuxiliaryDSBuilder auxBuilder = new AuxiliaryDSBuilder();
+		AuxiliaryDS aux = auxBuilder.buildBwtRLX(bwt, alphabet, nBuckets, bucketSize);
+		
+		return new SimpleBWTIndex(bwt, c, alphabet, bucketSize, fpocc, spocc, aux);
 
 	}
 
@@ -58,31 +73,35 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 	 * of characters that are lexicographically smaller than c.
 	 */
 	private Map<Character, Integer> countLesserOccurrences(String text, List<Character> alphabet) {
-		HashMap<Character, Integer> occurrences = new HashMap<Character, Integer>();
-
+		Map<Character, Integer> lesserOccurrences = new HashMap<Character, Integer>();
+		Map<Character, Integer> occurrences = countMatches(text, alphabet);
+		
 		for (char c : alphabet) {
 			int count = 0;
 			for (char d : alphabet) {
 				if (d < c) {
-					count += countMatches(text, d);
+					count += occurrences.get(d);
 				}
 			}
-			occurrences.put(c, count);
+			lesserOccurrences.put(c, count);
 		}
 
-		return occurrences;
+		return lesserOccurrences;
 	}
 
-	private int countMatches(String text, char c) {
-		int count = 0;
+	private Map<Character, Integer> countMatches(String text, List<Character> alphabet) {
+		HashMap<Character, Integer> occurrences = new HashMap<Character, Integer>();
 		char[] myText = text.toCharArray();
 
-		for (char d : myText) {
-			if (d == c) {
-				count++;
-			}
+		for (char c : alphabet) {
+			occurrences.put(c, 0);
 		}
-		return count;
+		
+		for (char d : myText) {
+			occurrences.put(d, occurrences.get(d) + 1);
+		}
+		
+		return occurrences;
 	}
 
 	/*
@@ -90,80 +109,88 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 	 * using word-size truncated recursion.
 	 */
 	private int[][] countOccurrencesByIndex(String text, char[] bwt, List<Character> alphabet) {
-//		int[][] occ = new int[alphabet.size()][text.length()];
-
+		// FIXME: is there a better way? i.e. will the alphabet already contain '\0'?
 		List<Character> bwtAlphabet = new ArrayList<Character>(alphabet);
-		bwtAlphabet.add('\0');
+		if (!bwtAlphabet.contains('\0')) {
+			bwtAlphabet.add('\0');
+		}
+		
+		int[][] occ = new int[alphabet.size()][text.length()];
+		
+		/* (logically) partition bwt */
+		int bucketSize = (int) Math.floor(Math.log(bwt.length)/Math.log(2));
+		int nBuckets = (int) Math.ceil(bwt.length / Math.floor(Math.log(bwt.length)/Math.log(2)));
 
-//		BitBuffer bwtRLX = buildBwtRLX(bwt, alphabet);
+		AuxiliaryDS bwtRLX = bwtRLXBuilder.buildBwtRLX(bwt, alphabet, nBuckets, bucketSize);
 
-		int[][] occ = { //t$a for occ[a],occ[c],occ[t],occ[g] aaaaact$g
+		/* build other auxiliary structures required for retrieving occ */
+		
+		
+		/*int[][] occ = { //t$a for occ[a],occ[c],occ[t],occ[g] aaaaact$g
 				{1, 2, 3, 4, 5, 5, 5, 5, 5}, 
 				{0, 0, 0, 0, 0, 1, 1, 1, 1},
 				{0, 0, 0, 0, 0, 0, 1, 1, 1},
 				{0, 0, 0, 0, 0, 0, 0, 0, 1},
 				{0, 0, 0, 0, 0, 0, 0, 1, 0},	
-				};
+				};*/
 		
 		return occ;
 	}
 
 	/*
-	 * Compress BWT as per Ferragina and Manzini (2005). (Required for building occ.)
-	 * Note: assumes alphabet size <= 127
+	 * Compute 'first prefix occ', see section 3.2 (i)
 	 */
-	public BitBuffer buildBwtRLX(char[] bwt, List<Character> alphabet) {
-		// TODO: throw exception if alphabet is too large?
-		// TODO: fix asymptotic size calculation
-		int size = 5 * bwt.length +
-				(int) Math.floor(Math.log(bwt.length)/Math.log(2));
-		BitBuffer bwtRLX = new BitBuffer(size);
-		List<Integer> mtf = new ArrayList<Integer>(bwt.length);
-		Collections.sort(alphabet);
-
-		/* move-to-front transform */
-		for (int i = 0; i < bwt.length; i++) {
-			char c = bwt[i];
-			int mtfValue = alphabet.indexOf(c);
-			mtf.add(i, mtfValue);
-			// move c to the front of alphabet
-			alphabet.remove(mtfValue);
-			alphabet.add(0, c);
-		}
-
-		/* perform steps (2) and (3) of the algorithm simultaneously */
-		for (int i = 0; i < mtf.size(); i++) {
-			int mtfValue = mtf.get(i);
-			if (mtfValue > 0) {
-				int nextIndex = bwtRLX.getNextIndex();
-				int zeros = (int) Math.floor(Math.log10(mtfValue + 1)/Math.log10(2));
-				for (int j = 0; j < zeros; j++) {
-					bwtRLX.setBit(nextIndex + j, false);
+	private int[][] computeFpocc(char[] index, List<Character> alphabet, int bucketSize) {
+		int[][] occ = new int[alphabet.size()][index.length / (int) Math.pow(bucketSize, 2) + 1];  // FIXME?
+		Collections.sort(alphabet);  // just in case 
+		
+		int bucket = 0;
+		for (int i = 0; i < index.length; i++) {
+			if (i == (bucket + 1) * (int) Math.pow(bucketSize, 2)) {
+				for (int j = 0; j < alphabet.size(); j++) {
+					occ[j][bucket + 1] = occ[j][bucket];
 				}
-				bwtRLX.setBitsToBinaryValueOf(bwtRLX.getNextIndex(), mtfValue + 1);
-			} else {
-				int runLength = 1;
-				// advance to the end of the run of 0's
-				while (i + 1 < mtf.size() && mtf.get(i + 1) == 0) {
-					runLength++;
-					i++;
-				}
-				String rle = getRunLengthEncoding(runLength);
-				for (int k = 0; k < rle.length(); k++) {
-					int value = rle.charAt(k) == '0'? 2 : 3;
-					bwtRLX.setBitsToBinaryValueOf(bwtRLX.getNextIndex(), value);
+				bucket++;
+			}
+			for (int k = 0; k < alphabet.size(); k++) {
+				if (index[i] == alphabet.get(k)) {
+					occ[k][bucket] += 1;
+					break;
 				}
 			}
 		}
-
-		return bwtRLX;
+		return occ;
 	}
-
-	private String getRunLengthEncoding(int runLength) {
-		// Note: will break if input < 1 (but this should never really happen)
-		String str =  Integer.toBinaryString(runLength + 1);
-		String reversed = new StringBuilder(str).reverse().toString();
-		return reversed.substring(0, reversed.length() - 1);  // drop last position
+	
+	/*
+	 * Compute 'second prefix occ', see section 3.2 (ii)
+	 */
+	private int[][] computeSpocc(char[] index, List<Character> alphabet, int bucketSize) {
+		int[][] occ = new int[alphabet.size()][index.length / bucketSize + 1];  // FIXME?
+		Collections.sort(alphabet);
+		
+		int bucket = 0;
+		for (int i = 0; i < index.length; i++) {
+			if (i == (bucket + 1) * bucketSize) {
+				for (int j = 0; j < alphabet.size(); j++) {
+					occ[j][bucket + 1] = occ[j][bucket];
+				}
+				bucket++;
+			}
+			if (i == (bucket - 1) * (int) Math.pow(bucketSize, 2)) {
+				// crossed boundary; restart count
+				for (int j = 0; j < alphabet.size(); j++) {
+					occ[j][bucket] = 0;
+				}
+			}
+			for (int j = 0; j < alphabet.size(); j++) {
+				if (index[i] == alphabet.get(j)) {
+					occ[j][bucket] += 1;
+					break;
+				}
+			}
+		}
+		return occ;
 	}
-
+	
 }
