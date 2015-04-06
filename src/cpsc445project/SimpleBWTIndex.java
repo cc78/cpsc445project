@@ -60,8 +60,6 @@ public class SimpleBWTIndex implements BWTIndex {
 			charToGet = pattern[i-1];
 			first = c.get(charToGet) + occ[alphabet.indexOf(charToGet)][first] + 1;
 			last = c.get(charToGet) + occ[alphabet.indexOf(charToGet)][last];
-			first = 0;
-			last = 0;
 		}
 		
 		return new int[] {first, last};
