@@ -48,10 +48,7 @@ public class Alignment {
 	public void computeAlignment(BWTIndex rbwt) {
 
 		int n = bwt.size();
-		int[][] sa_ranges = new int[10][2];
 		int depth = 0;
-		sa_ranges[depth][0] = 0;
-		sa_ranges[depth][1] = n-1;
 
 		//Using 0 indexing, where 0 = first character in string
 						
@@ -62,28 +59,23 @@ public class Alignment {
 			}
 			
 		
-		Stack<Character> stack = new Stack<Character>();
-		stack.push('\0');
-
-		int sa_left = 0;
-		int sa_right = 0;
+		Stack<StackItem> stack = new Stack<StackItem>();
+		stack.push(new StackItem(0, n-1, '\0'));
 		
 		while (!stack.empty()) {
-			char i = stack.pop();
-			curString.push(i);
+			StackItem item = stack.pop();
+			curString.push(item.z);
 			System.out.println(curString);
 			//align pattern with current prefix
-//			localAlignment(depth, i);
+			localAlignment(depth, item.z);
 			boolean isUp = true;
 			for (Character c : bwt.getAlphabet()) {
 				//given the SA range of the current node, push on the min SA of its children
 				//do edge check
 				
-				int[] newRange = rbwt.getSuffixRange(sa_ranges[depth][0], sa_ranges[depth][1], c);
+				int[] newRange = rbwt.getSuffixRange(item.sa_left, item.sa_right, c);
 				if (newRange[0] <= newRange[1]) {
-					sa_left = newRange[0];
-					sa_right = newRange[1];
-					stack.push(c);
+					stack.push(new StackItem(newRange[0], newRange[1], c));
 					isUp = false;
 				}
 			}
@@ -92,8 +84,6 @@ public class Alignment {
 				curString.pop();
 			} else {
 				depth = depth + 1;
-				sa_ranges[depth][0] = sa_left;
-				sa_ranges[depth][1] = sa_right;
 			}
 		}
 	}
@@ -106,7 +96,7 @@ public class Alignment {
 		    //N1
 		    if ((N.get(i-1, j-1) > 0) || (i == 1)) {
 		    	n1 = N.get(i-1, j-1) + scores.getScore(c,pattern.charAt(j-1));
-		    	System.out.println(bwt.get(c) + " " + pattern.charAt(j-1));
+//		    	System.out.println(bwt.get(c) + " " + pattern.charAt(j-1));
 		    } else {
 		    	n1 = negInf;
 		    }
