@@ -1,11 +1,10 @@
 package cpsc445project;
 
 /*
- * A compressed BWT index (that does not implement the BWTIndex interface) ...
- * Essentially a wrapper for BitBuffer that knows about logical bucket boundaries and
- * missing leading zeroes in each bucket (see Ferragina & Manzini 2005, Appendix C). 
+ * Auxiliary data structures for retrieving the number of occurrences of c in a prefix of BWT.
+ * See Ferragina and Manzini (2005). 
  */
-public class CompressedBWTIndex {
+public class AuxiliaryDS {
 
 	private BitBuffer bwtRLX;			// compressed bwt
 	private int bucketSize;
@@ -14,7 +13,7 @@ public class CompressedBWTIndex {
 	private int[] widthUpTo; 			// W[] from section 3.2 (i)
 	private int[] remainingWidthUpTo;	// W'[] from section 3.2 (ii)
 
-	public CompressedBWTIndex(BitBuffer bwtRLX, int bucketSize, int[] bucketBoundaries, int[] leadingZeroes) {
+	public AuxiliaryDS(BitBuffer bwtRLX, int bucketSize, int[] bucketBoundaries, int[] leadingZeroes) {
 		this.bwtRLX = bwtRLX;
 		this.bucketSize = bucketSize;
 		this.bucketBoundaries = bucketBoundaries;

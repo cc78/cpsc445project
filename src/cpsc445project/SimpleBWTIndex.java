@@ -15,19 +15,21 @@ public class SimpleBWTIndex implements BWTIndex {
 	private List<Character> alphabet;
 	private Map<Character, Integer> c;
 	private int bucketSize;
-	private int[][] occ;
+	//private int[][] occ;
 	private int[][] fpocc;  // see section 3.2 (i), Ferragina and Manzini (2005)
 	private int[][] spocc;  // see section 3.2 (ii), Ferragina and Manzini (2005)
+	private AuxiliaryDS aux;
 
 	public SimpleBWTIndex(char[] index, Map<Character, Integer> c, List<Character> alphabet,
-			int bucketSize, int[][] fpocc, int[][] spocc, int[][] occ) {
+			int bucketSize, int[][] fpocc, int[][] spocc, AuxiliaryDS aux) {
 		this.index = index;
 		this.alphabet = alphabet;
 		this.bucketSize = bucketSize;
 		this.c = c;
-		this.occ = occ;
+		//this.occ = occ;
 		this.fpocc = fpocc;
 		this.spocc = spocc;
+		this.aux = aux;
 	}
 
 	@Override
@@ -50,28 +52,39 @@ public class SimpleBWTIndex implements BWTIndex {
 
 	public int[] getSuffixRange(int suffixstart, int suffixend, char z) {
 		
-		int first = c.get(z) + occ[alphabet.indexOf(z)][suffixstart-1] + 1;
-		int last = c.get(z) + occ[alphabet.indexOf(z)][suffixend];
+		//int first = c.get(z) + occ[alphabet.indexOf(z)][suffixstart-1] + 1;
+		//int last = c.get(z) + occ[alphabet.indexOf(z)][suffixend];
 
-		return new int[] {first, last};
+		//return new int[] {first, last};
+		return new int[0];
 	}
 	
+	// TODO: correction for runs of zeroes split between buckets ... ?
 	public int getNumberOfOccurrences(char c, int q) {
-		// TODO: these could be calculated on initialization ... ? same with bucket size 
-		int firstPartition = (int) Math.pow(bucketSize, 2) * (index.length / (int) Math.pow(bucketSize, 2)) - 1;  // end index of first partition
-		int secondPartition = firstPartition + bucketSize * ((index.length - firstPartition) / bucketSize) - 1;   // end index of second partition
+		int bwtBucket = (int) Math.floor(((double) q) / bucketSize);
+		int spIndex = q - bwtBucket * bucketSize;
+		int t = (int) Math.ceil(((double) bwtBucket) / bucketSize) - 1;  // FIXME check this -- probably OK as is?
 		
-		//return getOccInFirstPartition() + getOccInSecondPartition + getOccInLastPartition();
+		// occurrences of c in first partition; 3.2 (i)
+		int occFP = fpocc[c][t];  
 		
-		return 0;
+		// occurrences of c in second partition; 3.2 (ii)
+		int occSP = 0;
+		if (bwtBucket % bucketSize != 0) {
+			occSP = spocc[c][bwtBucket - 1];
+		}
+		
+		// occurrences of c in third partition; 3.2 (iii)
+		int tpIndex;
+		if (bwtBucket % bucketSize == 0) {
+			tpIndex = aux.getWidthUpTo(t); // check this
+		} else {
+			tpIndex = aux.getWidthUpTo(t) + aux.getRemainingWidthUpTo(bwtBucket);  // check this
+		}
+		
+		return occFP + occSP;
 	}
-	
-	private int getOccInFirstPartition(char c, int lastIndex) {
 		
-		return 0;
-	}
-
-	
 	public int[] getSARange(int i, char[] pattern) {
 		i = pattern.length;
 		char charToGet = pattern[i-1];
@@ -80,8 +93,10 @@ public class SimpleBWTIndex implements BWTIndex {
 		int last = first;
 		while ((first <= last) && (i >= 2)) {
 			charToGet = pattern[i-1];
-			first = c.get(charToGet) + occ[alphabet.indexOf(charToGet)][first] + 1;
-			last = c.get(charToGet) + occ[alphabet.indexOf(charToGet)][last];
+			//first = c.get(charToGet) + occ[alphabet.indexOf(charToGet)][first] + 1;
+			//last = c.get(charToGet) + occ[alphabet.indexOf(charToGet)][last];
+			first = 0;
+			last = 0;
 		}
 		
 		return new int[] {first, last};

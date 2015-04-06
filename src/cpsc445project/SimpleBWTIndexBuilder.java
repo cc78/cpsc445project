@@ -13,7 +13,7 @@ import java.util.TreeMap;
  */
 public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 
-	private CompressedBWTIndexBuilder bwtRLXBuilder = new CompressedBWTIndexBuilder();
+	private AuxiliaryDSBuilder bwtRLXBuilder = new AuxiliaryDSBuilder();
 	
 	@Override
 	public BWTIndex build(String text, List<Character> alphabet) {
@@ -40,14 +40,18 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 		Map<Character, Integer> c = countLesserOccurrences(text, alphabet);
 
 		/* construct occ */
-		int[][] occ = countOccurrencesByIndex("", bwt, alphabet); 
+		//int[][] occ = countOccurrencesByIndex("", bwt, alphabet); 
 		//int[][] occ = new int[0][0];  // placeholder
 
 		int bucketSize = (int) Math.floor(Math.log(bwt.length)/Math.log(2));
 		int[][] fpocc = computeFpocc(bwt, alphabet, bucketSize);
 		int[][] spocc = computeSpocc(bwt, alphabet, bucketSize);
 		
-		return new SimpleBWTIndex(bwt, c, alphabet, bucketSize, fpocc, spocc, occ);
+		int nBuckets = (int) Math.ceil(((double) bwt.length) / bucketSize);  // check this
+		AuxiliaryDSBuilder auxBuilder = new AuxiliaryDSBuilder();
+		AuxiliaryDS aux = auxBuilder.buildBwtRLX(bwt, alphabet, nBuckets, bucketSize);
+		
+		return new SimpleBWTIndex(bwt, c, alphabet, bucketSize, fpocc, spocc, aux);
 
 	}
 
@@ -118,7 +122,7 @@ public class SimpleBWTIndexBuilder implements BWTIndexBuilder {
 		int nBuckets = (int) Math.ceil(bwt.length / Math.floor(Math.log(bwt.length)/Math.log(2)));
 
 		/* build compressed bwt */
-		CompressedBWTIndex bwtRLX = bwtRLXBuilder.buildBwtRLX(bwt, alphabet, nBuckets, bucketSize);
+		AuxiliaryDS bwtRLX = bwtRLXBuilder.buildBwtRLX(bwt, alphabet, nBuckets, bucketSize);
 
 		/* build other auxiliary structures required for retrieving occ */
 		

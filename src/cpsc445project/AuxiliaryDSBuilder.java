@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class CompressedBWTIndexBuilder {
+public class AuxiliaryDSBuilder {
 
 	/*
 	 * Compress BWT as per Ferragina and Manzini (2005). (Required for building occ.)
 	 * TODO: move this method to ... ?
 	 */
-	public CompressedBWTIndex buildBwtRLX(char[] bwt, List<Character> alphabet, int nBuckets, int bucketSize) {
+	public AuxiliaryDS buildBwtRLX(char[] bwt, List<Character> alphabet, int nBuckets, int bucketSize) {
 		// FIXME: asymptotic size calculation
 		int asymptoticSize = 5 * bwt.length +
 				(int) Math.floor(Math.log(bwt.length)/Math.log(2));
@@ -77,7 +77,7 @@ public class CompressedBWTIndexBuilder {
 			}
 		}
 		
-		return new CompressedBWTIndex(bwtRLX, bucketSize, bwtRLXBoundaries, leadingZeroes);
+		return new AuxiliaryDS(bwtRLX, bucketSize, bwtRLXBoundaries, leadingZeroes);
 	}
 
 	private String getRunLengthEncoding(int runLength) {
