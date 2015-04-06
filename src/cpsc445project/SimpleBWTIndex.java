@@ -38,6 +38,10 @@ public class SimpleBWTIndex implements BWTIndex {
 		return index;
 	}
 	
+	public int getC(char z) {
+		return c.get(z);
+	}
+	
 	public int getOcc(char c, int q) {
 		try {
 			return occ[alphabet.indexOf(c)][q];
