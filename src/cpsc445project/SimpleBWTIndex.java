@@ -43,17 +43,15 @@ public class SimpleBWTIndex implements BWTIndex {
 	}
 	
 	public int getOcc(char c, int q) {
-		try {
-			return occ[alphabet.indexOf(c)][q];
-		} catch (ArrayIndexOutOfBoundsException e) {
+		if (q < 0) {
 			return 0;
 		}
+		return occ[alphabet.indexOf(c)][q];
 	}
 
 	public int[] getSuffixRange(int suffixstart, int suffixend, char z) {
 		
-		System.out.println(c.get(z));
-		int first = c.get(z) + getOcc(z, suffixstart -1);
+		int first = c.get(z) + getOcc(z, suffixstart - 1);
 		int last = c.get(z) + getOcc(z, suffixend) - 1;
 
 		return new int[] {first, last};

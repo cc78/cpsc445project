@@ -69,14 +69,16 @@ public class Alignment {
 			//align pattern with current prefix
 			localAlignment(depth, item.z);
 			boolean isUp = true;
-			for (Character c : bwt.getAlphabet()) {
-				//given the SA range of the current node, push on the min SA of its children
-				//do edge check
-				
-				int[] newRange = bwt.getSuffixRange(item.sa_left, item.sa_right, c);
-				if (newRange[0] < newRange[1]) {
-					stack.push(new StackItem(newRange[0], newRange[1], c));
-					isUp = false;
+			if (item.sa_left != item.sa_right) { //Don't bother if the SA range spans 1 index
+				for (Character c : bwt.getAlphabet()) {
+					//given the SA range of the current node, push on the min SA of its children
+					//do edge check
+					
+					int[] newRange = bwt.getSuffixRange(item.sa_left, item.sa_right, c);
+					if (newRange[0] <= newRange[1]) {
+						stack.push(new StackItem(newRange[0], newRange[1], c));
+						isUp = false;
+					}
 				}
 			}
 			if (isUp) {
