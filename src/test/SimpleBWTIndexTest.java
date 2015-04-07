@@ -1,3 +1,5 @@
+package test;
+
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
@@ -48,6 +50,11 @@ public class SimpleBWTIndexTest {
 		int[] saRangeA = bwt.getSuffixRange(saRangeC[0], saRangeC[1], 'a');
 		assertTrue(saRangeA[0] == 2);
 		assertTrue(saRangeA[1] == 3);
+		
+		saRangeC = bwt.getSuffixRange(0, bwt.size() - 1, 'a');
+		saRangeA = bwt.getSuffixRange(saRangeC[0], saRangeC[1], 'a');
+		assertTrue(saRangeA[0] == 1);
+		assertTrue(saRangeA[1] == 1);
 	}
 
 }

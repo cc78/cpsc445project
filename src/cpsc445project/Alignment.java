@@ -60,32 +60,29 @@ public class Alignment {
 			
 		
 		Stack<StackItem> stack = new Stack<StackItem>();
-		stack.push(new StackItem(0, n-1, '\0'));
+		stack.push(new StackItem(0, n-1, '\0', 0));
 		
 		while (!stack.empty()) {
 			StackItem item = stack.pop();
+			depth = item.depth;
+			while (curString.size() > depth ) {
+				curString.pop();
+			}
+			
 			curString.push(item.z);
 			System.out.println(curString);
 			//align pattern with current prefix
-			localAlignment(depth, item.z);
-			boolean isUp = true;
+//			localAlignment(depth, item.z);
 			if (item.sa_left != item.sa_right) { //Don't bother if the SA range spans 1 index
-				for (Character c : bwt.getAlphabet()) {
+				for (Character c : rbwt.getAlphabet()) {
 					//given the SA range of the current node, push on the min SA of its children
 					//do edge check
 					
-					int[] newRange = rbwt.getSuffixRange(item.sa_left, item.sa_right, c);
+					int[] newRange = bwt.getSuffixRange(item.sa_left, item.sa_right, c);
 					if (newRange[0] <= newRange[1]) {
-						stack.push(new StackItem(newRange[0], newRange[1], c));
-						isUp = false;
+						stack.push(new StackItem(newRange[0], newRange[1], c, depth+1));
 					}
 				}
-			}
-			if (isUp) {
-				depth = depth - 1;
-				curString.pop();
-			} else {
-				depth = depth + 1;
 			}
 		}
 	}
