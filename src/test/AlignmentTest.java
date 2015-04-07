@@ -16,23 +16,24 @@ import cpsc445project.SimpleBWTIndexBuilder;
 public class AlignmentTest {
 	private static BWTIndexBuilder builder = new SimpleBWTIndexBuilder();
 	private static List<Character> alphabet = new ArrayList<Character>();
-	BWTIndex bwt;
 	BWTIndex rbwt;
 	
 	@Before
 	public void init() {
+		alphabet.add('\0');
 		alphabet.add('a');
 		alphabet.add('c');
 		alphabet.add('t');
 		alphabet.add('g');
-		bwt = builder.build("actg", alphabet); //Build BWT
-		rbwt = builder.build("gtca", alphabet); //Build reverse of BWT
+		//Build the BWT for the reverse of the text instead of the text
+		rbwt = builder.build("gacaca", alphabet);
 	}
 	
 	@Test
 	public void testAlignment() {
-		Alignment a = new Alignment(bwt, "at");
-		a.computeAlignment(rbwt);
+		Alignment a = new Alignment(rbwt, "acacag");
+		double result = a.computeAlignment();
+		assertTrue(result == 6.0);
 	}	
 	
 }

@@ -16,21 +16,21 @@ public class Alignment {
 		alphabet.add('c');
 		alphabet.add('t');
 		alphabet.add('g');
-		BWTIndex bwt = builder.build("acaacg", alphabet);
+		//Build the BWT for the reverse of the text instead of the text
 		BWTIndex rbwt = builder.build("gcaaca", alphabet);
 		
-		Alignment a = new Alignment(bwt, "acaa");
-		a.computeAlignment(rbwt);
+		Alignment a = new Alignment(rbwt, "acaacg");
+		a.computeAlignment();
 	}
 
 	
 	final static double negInf = Double.NEGATIVE_INFINITY;
 	
-	final static double d = 3; //g
-	final static double e = 1; //s
+	final static double d = 5; //g
+	final static double e = 2; //s
 	final static ScoringMatrix scores = new ScoringMatrix();
 	
-	BWTIndex bwt;
+	BWTIndex rbwt;
 	String pattern;
 	ListMatrix N;
 	ListMatrix N1;
@@ -38,7 +38,7 @@ public class Alignment {
 	ListMatrix N3;
 	
 	public Alignment(BWTIndex bwt, String pattern) {
-		this.bwt = bwt;
+		this.rbwt = bwt;
 		this.pattern = pattern;
 		this.N1 = new ListMatrix();
 		this.N2 = new ListMatrix();
@@ -46,9 +46,9 @@ public class Alignment {
 		this.N = new ListMatrix();
 	}	
 		
-	public void computeAlignment(BWTIndex rbwt) {
+	public double computeAlignment() {
 
-		int n = bwt.size();
+		int n = rbwt.size();
 		int depth = 0;
 		double bestScore = 0;
 		
@@ -77,14 +77,14 @@ public class Alignment {
 			
 			curString.push(item.z);
 			//Don't bother if this is the end of the string or if deeper than 2*pattern-length bound
-			if (item.z != '\0' || item.depth > pattern.length()*2) { 
+			if (item.z != '\0' && !(item.depth > pattern.length()*2)) { 
 				//align pattern with current prefix		
 				substringScore = localAlignment(depth, item.z);
 				if (substringScore > bestScore) {
 					bestScore = substringScore;
 				}
 				
-				for (Character c : bwt.getAlphabet()) {
+				for (Character c : rbwt.getAlphabet()) {
 					//given the SA range of the current node, push on the min SA of its children
 					//do edge check
 					
@@ -94,11 +94,12 @@ public class Alignment {
 					}
 				}
 			} else {
-				System.out.println(curString);
-				System.out.println(bestScore);
-				bestScore = 0;
+//				System.out.println(curString);
+//				System.out.println(bestScore);
+//				bestScore = 0;
 			}
 		}
+		return bestScore;
 	}
 	
 	private double localAlignment(Integer i, char c){
@@ -109,11 +110,8 @@ public class Alignment {
 		for (int j=1; j<=pattern.length(); j++) {
 		    //N1
 		    
-//			System.out.println(c + " " + pattern.charAt(j-1));
 			n1 = N.get(i-1, j-1) + scores.getScore(c,pattern.charAt(j-1));
 		    N1.set(i, j, n1);
-
-		    
 		    
 		    //N2
 		    if (N2.get(i-1, j) > 0 && N.get(i-1, j) > 0) {
