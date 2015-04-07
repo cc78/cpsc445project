@@ -25,8 +25,9 @@ public class AlignmentTest {
 		alphabet.add('c');
 		alphabet.add('t');
 		alphabet.add('g');
+		String reversedString = new StringBuilder("gacgc").reverse().toString();
 		//Build the BWT for the reverse of the text instead of the text
-		rbwt = builder.build("cgcag", alphabet);
+		rbwt = builder.build(reversedString, alphabet);
 	}
 	
 	@Test

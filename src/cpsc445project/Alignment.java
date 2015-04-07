@@ -16,8 +16,10 @@ public class Alignment {
 		alphabet.add('c');
 		alphabet.add('t');
 		alphabet.add('g');
+		
+		String reversedString = new StringBuilder("gacaca").reverse().toString();
 		//Build the BWT for the reverse of the text instead of the text
-		BWTIndex rbwt = builder.build("gacaca", alphabet);
+		BWTIndex rbwt = builder.build(reversedString, alphabet);
 		
 		Alignment a = new Alignment(rbwt, "ctc");
 		a.computeAlignment();
@@ -56,17 +58,18 @@ public class Alignment {
 						
 		Stack<Character> curString = new Stack<Character>();
 		
-		N.set(0, 0, 0);
-		
+		N.set(0, 0, 0);	
 		N1.set(0, 0, 0);
 		
-		for (int i=1; i<=pattern.length()*2; i++) {
-			N2.set(i,0, -(d + (i-1)*e));
+		for (int i=1; i<=n; i++) {
+//			N2.set(i,0, -(d + (i-1)*e));
+			N2.set(i,0, 0);
 			N.set(i, 0, N2.get(i, 0));
 		}
 		
 		for (int j=1; j<=pattern.length(); j++) {
-			N3.set(0, j, -(d + (j-1)*e));
+//			N3.set(0, j, -(d + (j-1)*e));
+			N3.set(0, j, 0);
 			N.set(0, j, N3.get(0, j));
 		}		
 		
@@ -129,7 +132,8 @@ public class Alignment {
 		    n3 = max( N3.get(i, j-1)-e, N1.get(i, j-1)-d);
 		    N3.set(i, j, n3);		    
 
-		    double bestval = max(N1.get(i,j), N2.get(i,j), N3.get(i,j));
+//		    double bestval = max(N1.get(i,j), N2.get(i,j), N3.get(i,j));
+		    double bestval = max(N.get(i-1, j)- d, N.get(i, j-1)-d, n1); 
 		    if (bestval > bestForThisSubstring) {
 		    	bestForThisSubstring = bestval;
 		    }
