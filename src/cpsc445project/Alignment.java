@@ -11,12 +11,13 @@ public class Alignment {
 	public static void main(String[] args) {
 		BWTIndexBuilder builder = new SimpleBWTIndexBuilder();
 		List<Character> alphabet = new ArrayList<Character>();
+		alphabet.add('\0');
 		alphabet.add('a');
 		alphabet.add('c');
 		alphabet.add('t');
 		alphabet.add('g');
-		BWTIndex bwt = builder.build("acacag", alphabet);
-		BWTIndex rbwt = builder.build("gacaca", alphabet);
+		BWTIndex bwt = builder.build("acaacg", alphabet);
+		BWTIndex rbwt = builder.build("gcaaca", alphabet);
 		
 		Alignment a = new Alignment(bwt, "cac");
 		a.computeAlignment(rbwt);
@@ -74,11 +75,11 @@ public class Alignment {
 			//align pattern with current prefix
 //			localAlignment(depth, item.z);
 			if (item.sa_left != item.sa_right) { //Don't bother if the SA range spans 1 index
-				for (Character c : rbwt.getAlphabet()) {
+				for (Character c : bwt.getAlphabet()) {
 					//given the SA range of the current node, push on the min SA of its children
 					//do edge check
 					
-					int[] newRange = bwt.getSuffixRange(item.sa_left, item.sa_right, c);
+					int[] newRange = rbwt.getSuffixRange(item.sa_left, item.sa_right, c);
 					if (newRange[0] <= newRange[1]) {
 						stack.push(new StackItem(newRange[0], newRange[1], c, depth+1));
 					}
