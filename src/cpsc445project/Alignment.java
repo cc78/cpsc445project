@@ -61,7 +61,7 @@ public class Alignment {
 			
 		
 		Stack<StackItem> stack = new Stack<StackItem>();
-		stack.push(new StackItem(0, n-1, '\0', 0));
+		stack.push(new StackItem(0, n-1, ' ', 0));
 		
 		while (!stack.empty()) {
 			StackItem item = stack.pop();
@@ -71,10 +71,9 @@ public class Alignment {
 			}
 			
 			curString.push(item.z);
-			System.out.println(curString);
 			//align pattern with current prefix
 //			localAlignment(depth, item.z);
-			if (item.sa_left != item.sa_right) { //Don't bother if the SA range spans 1 index
+			if (item.z != '\0') { //Don't bother if this is the end of the string
 				for (Character c : bwt.getAlphabet()) {
 					//given the SA range of the current node, push on the min SA of its children
 					//do edge check
@@ -84,6 +83,8 @@ public class Alignment {
 						stack.push(new StackItem(newRange[0], newRange[1], c, depth+1));
 					}
 				}
+			} else {
+				System.out.println(curString);
 			}
 		}
 	}
