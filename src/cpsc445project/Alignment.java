@@ -1,5 +1,9 @@
 package cpsc445project;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -9,15 +13,57 @@ import cpsc445project.ListMatrix;
 public class Alignment {
 
 	public static void main(String[] args) {
+		
+		String text = null;
+		String textFileName;
+		StringBuilder strBuilder = new StringBuilder();
+		
+		if (args.length < 1) {
+			System.err.println("Usage: ... ");  // TODO
+			System.exit(1);
+		}
+		
+		textFileName = args[0];
+		
+		/* Attempt to read file. Assume FASTA format. Only read first sequence if file contains multiple. */
+		try (BufferedReader reader = new BufferedReader(new FileReader(textFileName))) {
+			String line = reader.readLine();
+			
+			while (!line.startsWith(">") && line != null) {
+				line = reader.readLine();
+			}
+			if (line == null) {
+				System.err.println("Reached end of file without encountering sequence.");
+				System.exit(1);
+			}
+			/* read the sequence */
+			while ((line = reader.readLine()) != null && !line.startsWith(">")) {
+				strBuilder.append(line);
+			}
+			
+			text = strBuilder.toString();
+			System.out.println(text);  // DEBUG
+			
+		} catch (IOException e) {
+			System.err.println(e);
+			System.exit(1);
+		}
+		
 		BWTIndexBuilder builder = new SimpleBWTIndexBuilder();
 		List<Character> alphabet = new ArrayList<Character>();
-		alphabet.add('\0');
+		/*alphabet.add('\0');
 		alphabet.add('a');
 		alphabet.add('c');
 		alphabet.add('t');
-		alphabet.add('g');
+		alphabet.add('g');*/
+		alphabet.add('\0');
+		alphabet.add('A');
+		alphabet.add('C');
+		alphabet.add('T');
+		alphabet.add('G');
 		
-		String reversedString = new StringBuilder("gacaca").reverse().toString();
+		//String reversedString = new StringBuilder("gacaca").reverse().toString();
+		String reversedString = new StringBuilder(text).reverse().toString();
 		//Build the BWT for the reverse of the text instead of the text
 		BWTIndex rbwt = builder.build(reversedString, alphabet);
 		
