@@ -62,11 +62,11 @@ public class Alignment {
 		N1.set(0, 0, 0);
 		
 		for (int i=1; i<=n; i++) {
-//			N2.set(i,0, -(d + (i-1)*e));
-			N2.set(i,0, 0);
+			N2.set(i,0, -(d + (i-1)*e));
 			N.set(i, 0, N2.get(i, 0));
 		}
 		
+		//Don't penalize for gap at the beginning of the pattern
 		for (int j=1; j<=pattern.length(); j++) {
 //			N3.set(0, j, -(d + (j-1)*e));
 			N3.set(0, j, 0);
@@ -132,8 +132,7 @@ public class Alignment {
 		    n3 = max( N3.get(i, j-1)-e, N1.get(i, j-1)-d);
 		    N3.set(i, j, n3);		    
 
-//		    double bestval = max(N1.get(i,j), N2.get(i,j), N3.get(i,j));
-		    double bestval = max(N.get(i-1, j)- d, N.get(i, j-1)-d, n1); 
+		    double bestval = max(N1.get(i,j), N2.get(i,j), N3.get(i,j));
 		    if (bestval > bestForThisSubstring) {
 		    	bestForThisSubstring = bestval;
 		    }
