@@ -14,38 +14,24 @@ public class Alignment {
 
 	public static void main(String[] args) {
 		
-		String text = null;
 		String textFileName;
-		StringBuilder strBuilder = new StringBuilder();
+		String patternFileName;
 		
-		if (args.length < 1) {
-			System.err.println("Usage: ... ");  // TODO
+		if (args.length < 2) {
+			System.err.println("Usage: file1 file2 (text, pattern)");
 			System.exit(1);
 		}
 		
 		textFileName = args[0];
+		patternFileName = args[1];
+
+		String text = readFASTA(textFileName);
+		if (text == null) {
+			System.exit(1);
+		}
 		
-		/* Attempt to read file. Assume FASTA format. Only read first sequence if file contains multiple. */
-		try (BufferedReader reader = new BufferedReader(new FileReader(textFileName))) {
-			String line = reader.readLine();
-			
-			while (!line.startsWith(">") && line != null) {
-				line = reader.readLine();
-			}
-			if (line == null) {
-				System.err.println("Reached end of file without encountering sequence.");
-				System.exit(1);
-			}
-			/* read the sequence */
-			while ((line = reader.readLine()) != null && !line.startsWith(">")) {
-				strBuilder.append(line);
-			}
-			
-			text = strBuilder.toString();
-			System.out.println(text);  // DEBUG
-			
-		} catch (IOException e) {
-			System.err.println(e);
+		String pattern = readFASTA(patternFileName);
+		if (pattern == null) {
 			System.exit(1);
 		}
 		
@@ -67,8 +53,9 @@ public class Alignment {
 		//Build the BWT for the reverse of the text instead of the text
 		BWTIndex rbwt = builder.build(reversedString, alphabet);
 		
-		Alignment a = new Alignment(rbwt, "ctc");
-		a.computeAlignment();
+		Alignment a = new Alignment(rbwt, pattern);
+		double result = a.computeAlignment();
+		System.out.println(result);  // DEBUG
 	}
 
 	
@@ -151,8 +138,8 @@ public class Alignment {
 					}
 				}
 			} else {
-//				System.out.println(curString);
-//				System.out.println(bestScore);
+				System.out.println(curString);
+				System.out.println(bestScore);
 //				bestScore = 0;
 			}
 		}
@@ -195,5 +182,38 @@ public class Alignment {
 				max = d;
 		}
 		return max;
+	}
+	
+	/* 
+	 * Attempt to read file. Assume FASTA format. Only read first sequence if file contains multiple.
+	 */
+	private static String readFASTA(String fileName) {
+		String text;
+		StringBuilder strBuilder = new StringBuilder();
+		
+		try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
+			String line = reader.readLine();
+			
+			while (!line.startsWith(">") && line != null) {
+				line = reader.readLine();
+			}
+			if (line == null) {
+				System.err.println("Reached end of file without encountering sequence.");
+				System.exit(1);
+			}
+			/* read the sequence */
+			while ((line = reader.readLine()) != null && !line.startsWith(">")) {
+				strBuilder.append(line);
+			}
+			
+			text = strBuilder.toString();
+			System.out.println(text);  // DEBUG
+			
+		} catch (IOException e) {
+			System.err.println(e);
+			return null;
+		}
+		
+		return text;
 	}
 }
