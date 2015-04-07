@@ -74,7 +74,7 @@ public class Alignment {
 					//given the SA range of the current node, push on the min SA of its children
 					//do edge check
 					
-					int[] newRange = bwt.getSuffixRange(item.sa_left, item.sa_right, c);
+					int[] newRange = rbwt.getSuffixRange(item.sa_left, item.sa_right, c);
 					if (newRange[0] <= newRange[1]) {
 						stack.push(new StackItem(newRange[0], newRange[1], c));
 						isUp = false;
