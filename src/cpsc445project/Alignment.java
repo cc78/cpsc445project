@@ -17,17 +17,17 @@ public class Alignment {
 		alphabet.add('t');
 		alphabet.add('g');
 		//Build the BWT for the reverse of the text instead of the text
-		BWTIndex rbwt = builder.build("gcaaca", alphabet);
+		BWTIndex rbwt = builder.build("gacaca", alphabet);
 		
-		Alignment a = new Alignment(rbwt, "acaacg");
+		Alignment a = new Alignment(rbwt, "ctc");
 		a.computeAlignment();
 	}
 
 	
 	final static double negInf = Double.NEGATIVE_INFINITY;
 	
-	final static double d = 5; //g
-	final static double e = 2; //s
+	final static double d = 1; //g
+	final static double e = 1; //s
 	final static ScoringMatrix scores = new ScoringMatrix();
 	
 	BWTIndex rbwt;
@@ -56,13 +56,19 @@ public class Alignment {
 						
 		Stack<Character> curString = new Stack<Character>();
 		
-		for (int j=0; j<=pattern.length(); j++) {
-				N.set(0,j, 0);
-			}
-
+		N.set(0, 0, 0);
+		
+		N1.set(0, 0, 0);
+		
 		for (int i=1; i<=pattern.length()*2; i++) {
-			N.set(i,0, -(d + i*e));
+			N2.set(i,0, -(d + (i-1)*e));
+			N.set(i, 0, N2.get(i, 0));
 		}
+		
+		for (int j=1; j<=pattern.length(); j++) {
+			N3.set(0, j, -(d + (j-1)*e));
+			N.set(0, j, N3.get(0, j));
+		}		
 		
 		Stack<StackItem> stack = new Stack<StackItem>();
 		stack.push(new StackItem(0, n-1, ' ', 0));
@@ -78,10 +84,12 @@ public class Alignment {
 			curString.push(item.z);
 			//Don't bother if this is the end of the string or if deeper than 2*pattern-length bound
 			if (item.z != '\0' && !(item.depth > pattern.length()*2)) { 
-				//align pattern with current prefix		
-				substringScore = localAlignment(depth, item.z);
-				if (substringScore > bestScore) {
-					bestScore = substringScore;
+				//align pattern with current prefix
+				if (depth > 0) {
+					substringScore = localAlignment(depth, item.z);
+					if (substringScore > bestScore) {
+						bestScore = substringScore;
+					}
 				}
 				
 				for (Character c : rbwt.getAlphabet()) {
@@ -109,35 +117,16 @@ public class Alignment {
 		double bestForThisSubstring = 0;
 		for (int j=1; j<=pattern.length(); j++) {
 		    //N1
-		    
 			n1 = N.get(i-1, j-1) + scores.getScore(c,pattern.charAt(j-1));
 		    N1.set(i, j, n1);
 		    
 		    //N2
-		    if (N2.get(i-1, j) > 0 && N.get(i-1, j) > 0) {
-		    	n2 = max( N2.get(i-1, j)-e, N.get(i-1, j)-(d+e) );
-		    } else if (N2.get(i-1, j) > 0) {
-		    	n2 = N2.get(i-1, j) - e;
-		    } else if (N.get(i-1, j) > 0) {
-		    	n2 = N.get(i-1, j) - (d+e);
-		    } else {
-		    	n2 = negInf;
-		    }
-
+		    n2 = max( N2.get(i-1, j)-e, N1.get(i-1, j)- d);
 		    N2.set(i, j, n2);
    
 		    
 		    //N3
-		    if (N3.get(i, j-1) > 0 && N.get(i, j-1) > 0) {
-		    	n3 = max( N3.get(i, j-1)-e, N.get(i, j-1)-(d+e) );
-		    } else if (N3.get(i, j-1) > 0) {
-		    	n3 = N3.get(i, j-1) - e;
-		    } else if (N.get(i, j-1) > 0) {
-		    	n3 = N.get(i, j-1) - (d+e);
-		    } else {
-		    	n3 = negInf;
-		    }
-		    
+		    n3 = max( N3.get(i, j-1)-e, N1.get(i, j-1)-d);
 		    N3.set(i, j, n3);		    
 
 		    double bestval = max(N1.get(i,j), N2.get(i,j), N3.get(i,j));

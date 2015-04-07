@@ -26,14 +26,15 @@ public class AlignmentTest {
 		alphabet.add('t');
 		alphabet.add('g');
 		//Build the BWT for the reverse of the text instead of the text
-		rbwt = builder.build("gacaca", alphabet);
+		rbwt = builder.build("cgcag", alphabet);
 	}
 	
 	@Test
 	public void testAlignment() {
-		Alignment a = new Alignment(rbwt, "acacag");
+		Alignment a = new Alignment(rbwt, "tatct");
 		double result = a.computeAlignment();
-		assertTrue(result == 6.0);
+		System.out.println(result);
+		assertTrue(result == 3.0);
 	}	
 	
 }
