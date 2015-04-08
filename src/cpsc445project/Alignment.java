@@ -134,6 +134,8 @@ public class Alignment {
 								substringAlignment.getPatternIndex(), d, e, N);
 						bestAlignment.setScore(bestScore);
 						System.out.println(bestAlignment);
+					} else if (substringAlignment.getScore() <= 0) {
+						continue;
 					}
 				}
 				
