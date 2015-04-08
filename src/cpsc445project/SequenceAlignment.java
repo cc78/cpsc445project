@@ -1,5 +1,7 @@
 package cpsc445project;
 
+import java.util.Comparator;
+
 public class SequenceAlignment {
 	
 	//private int startIndex;
@@ -14,6 +16,10 @@ public class SequenceAlignment {
 		this.score = score;
 		this.patternSegment = patternSegment;
 		this.textSegment = textSegment;
+	}
+	
+	public double getScore() {
+		return this.score;
 	}
 	
 	public void setScore(double score) {
@@ -34,6 +40,22 @@ public class SequenceAlignment {
 		}
 		
 		return builder.toString();
+	}
+	
+	public static class SequenceAlignmentComparator implements Comparator<SequenceAlignment> {
+		
+		@Override
+		public int compare(SequenceAlignment a1, SequenceAlignment a2) {
+			if (a1.getScore() < a2.getScore()) {
+				return -1;
+			}
+			
+			if (a1.getScore() > a2.getScore()) {
+				return 1;
+			}
+			
+			return 0;
+		}
 	}
 
 }

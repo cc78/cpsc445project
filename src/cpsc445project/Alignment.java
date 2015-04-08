@@ -4,10 +4,14 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.PriorityQueue;
 import java.util.Stack;
 
+import cpsc445project.AlignmentResult.AlignmentResultComparator;
 import cpsc445project.ListMatrix;
+import cpsc445project.SequenceAlignment.SequenceAlignmentComparator;
 
 public class Alignment {
 
@@ -54,8 +58,8 @@ public class Alignment {
 		//pattern = "caca";
 		
 		Alignment a = new Alignment(rbwt, pattern);
-		double result = a.computeAlignment();
-		System.out.println(result);  // DEBUG
+		PriorityQueue<SequenceAlignment> result = a.computeAlignment();
+		//System.out.println(result);  // DEBUG
 	}
 
 	
@@ -81,11 +85,14 @@ public class Alignment {
 		this.N = new ListMatrix();
 	}	
 		
-	public double computeAlignment() {
+	public PriorityQueue<SequenceAlignment> computeAlignment() {
 
 		int n = rbwt.size();
 		int depth = 0;
-		double bestScore = 0;
+		//double bestScore = 0;
+		int toKeep = 10;
+		PriorityQueue<AlignmentResult> scoreQueue = new PriorityQueue<AlignmentResult>(toKeep + 1, new AlignmentResultComparator());
+		PriorityQueue<SequenceAlignment> alignmentQueue = new PriorityQueue<SequenceAlignment>(toKeep + 1, new SequenceAlignmentComparator());
 		
 		//Using 0 indexing, where 0 = first character in string
 						
@@ -110,7 +117,7 @@ public class Alignment {
 		stack.push(new StackItem(0, n-1, ' ', 0));
 		
 		AlignmentResult substringAlignment;
-		SequenceAlignment bestAlignment;
+		SequenceAlignment topAlignment;
 		while (!stack.empty()) {
 			StackItem item = stack.pop();
 			depth = item.depth;
@@ -124,11 +131,30 @@ public class Alignment {
 			if (item.z != '\0' && !(item.depth > pattern.length()*2)) { 
 				//align pattern with current prefix
 				if (depth > 0) {
+					AlignmentResult removed = null;
 					substringAlignment = localAlignment(depth, item.z);
-					if (substringAlignment.getScore() > bestScore) {
+					if (substringAlignment.getScore() <= 0) {
+						continue;
+					}
+					scoreQueue.add(substringAlignment);
+					if (scoreQueue.size() > toKeep) {
+						removed = scoreQueue.poll();
+					}
+					if (removed == null || removed.getScore() < substringAlignment.getScore()) {
+						if (removed != null) {
+							alignmentQueue.poll();
+						}
+						/* perform traceback */
+						String text = stackToString(curString);
+						topAlignment = traceback(text, pattern, substringAlignment.getTextIndex(),
+								substringAlignment.getPatternIndex(), d, e, N);
+						topAlignment.setScore(substringAlignment.getScore());
+						alignmentQueue.add(topAlignment);
+					} 
+					
+					/*if (substringAlignment.getScore() > bestScore) {
 						bestScore = substringAlignment.getScore();
 						System.out.println(bestScore);
-						/* traceback */
 						String text = stackToString(curString);
 						bestAlignment = traceback(text, pattern, substringAlignment.getTextIndex(),
 								substringAlignment.getPatternIndex(), d, e, N);
@@ -136,7 +162,7 @@ public class Alignment {
 						System.out.println(bestAlignment);
 					} else if (substringAlignment.getScore() <= 0) {
 						continue;
-					}
+					}*/
 				}
 				
 				for (Character c : rbwt.getAlphabet()) {
@@ -150,7 +176,7 @@ public class Alignment {
 				}
 			} 
 		}
-		return bestScore;
+		return alignmentQueue;
 	}
 	
 	private AlignmentResult localAlignment(Integer i, char c){
