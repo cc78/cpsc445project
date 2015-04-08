@@ -192,9 +192,10 @@ public class Alignment {
 		char[] alignedText = new char[length];
 		
 		int k = 1;
-		while (i >= 0 && j >= 0) {
+		while (i > 0 && j > 0) {
 			char t = text.charAt(i);
-			char p = pattern.charAt(j);
+			char p = pattern.charAt(j-1);
+			System.out.println(t + " " + p);
 			if (N.get(i, j) == N.get(i - 1, j - 1) + scores.getScore(t, p)) {
 				alignedPattern[length - k] = p;
 				alignedText[length - k] = t;
