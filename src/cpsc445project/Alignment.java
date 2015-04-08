@@ -110,6 +110,7 @@ public class Alignment {
 		stack.push(new StackItem(0, n-1, ' ', 0));
 		
 		double substringScore;
+		SequenceAlignment bestAlignment;
 		while (!stack.empty()) {
 			StackItem item = stack.pop();
 			depth = item.depth;
@@ -118,6 +119,7 @@ public class Alignment {
 			}
 			
 			curString.push(item.z);
+			System.out.println(curString);
 			//Don't bother if this is the end of the string or if deeper than 2*pattern-length bound
 			if (item.z != '\0' && !(item.depth > pattern.length()*2)) { 
 				//align pattern with current prefix
@@ -125,6 +127,9 @@ public class Alignment {
 					substringScore = localAlignment(depth, item.z);
 					if (substringScore > bestScore) {
 						bestScore = substringScore;
+						// do traceback here
+						//bestAlignment = traceback(...);
+						//bestAlignment.setScore(bestScore);
 					}
 				}
 				
@@ -137,11 +142,7 @@ public class Alignment {
 						stack.push(new StackItem(newRange[0], newRange[1], c, depth+1));
 					}
 				}
-			} else {
-				System.out.println(curString);
-				System.out.println(bestScore);
-//				bestScore = 0;
-			}
+			} 
 		}
 		return bestScore;
 	}
@@ -174,6 +175,44 @@ public class Alignment {
 		return bestForThisSubstring;
 	}
 	
+	private SequenceAlignment traceback(String text, String pattern, int tEndIndex, int pEndIndex, int i, int j,
+			int length, int d, int e, ListMatrix N) {
+		char[] alignedPattern = new char[length];
+		char[] alignedText = new char[length];
+		
+		int k = 1;
+		int tIndex = tEndIndex;
+		int pIndex = pEndIndex;
+		while (tIndex < length || pIndex < length) {
+			char t = text.charAt(tIndex);
+			char p = pattern.charAt(pIndex);
+			if (N.get(i, j) == N.get(i - 1, j - 1) + scores.getScore(t, p)) {
+				alignedPattern[length - k] = p;
+				alignedText[length - k] = t;
+				tIndex--;
+				pIndex--;
+			
+			} else if (N.get(i, j) == N.get(i - 1, j) - d || N.get(i, j) == N.get(i - 1, j) - e) {
+				alignedPattern[length - k] = '-';
+				alignedText[length - k] = t;
+				tIndex--;
+			
+			} else if (N.get(i, j) == N.get(i, j - 1) - d || N.get(i, j) == N.get(i, j - 1) - e) {
+				alignedPattern[length - k] = p;
+				alignedText[length - k] = '-';
+				pIndex--;
+				
+			} else {
+				System.err.println("Error during traceback");
+				System.exit(1);
+			}
+			k++;
+		}
+		
+		return new SequenceAlignment(tEndIndex - length, tEndIndex, 0.0, String.valueOf(alignedPattern),
+				String.valueOf(alignedText));
+	}
+	
 	private static double max(double... vals) {
 		double max = negInf;
 
@@ -182,6 +221,18 @@ public class Alignment {
 				max = d;
 		}
 		return max;
+	}
+	
+	private int indexOfMax(double[] vals) {
+		int index = 0;
+		double max = vals[0];
+		
+		for (int i = 1; i < vals.length; i++) {
+			if (vals[i] > max)
+				max = vals[i];
+				index = i;
+		}
+		return index;
 	}
 	
 	/* 
@@ -216,4 +267,5 @@ public class Alignment {
 		
 		return text;
 	}
+	
 }
