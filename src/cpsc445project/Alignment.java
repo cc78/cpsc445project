@@ -128,15 +128,12 @@ public class Alignment {
 					substringAlignment = localAlignment(depth, item.z);
 					if (substringAlignment.getScore() > bestScore) {
 						bestScore = substringAlignment.getScore();
-						// do traceback here
-						
+						/* traceback */
 						String text = stackToString(curString);
-						System.out.println(text);
-						
-						//String text = String.valueOf(curString.toArray()).substring(0, stack.size() - item.depth);  // This is incorrect
 						bestAlignment = traceback(text, pattern, substringAlignment.getTextIndex(),
 								substringAlignment.getPatternIndex(), d, e, N);
 						bestAlignment.setScore(bestScore);
+						System.out.println(bestAlignment);
 					}
 				}
 				
@@ -246,7 +243,7 @@ public class Alignment {
 	
 	// This is pretty awful
 	private String stackToString(Stack<Character> stack) {
-		int size = stack.size();  // ignore empty character at the bottom of stack
+		int size = stack.size();
 		Stack<Character> stackCopy = (Stack<Character>) stack.clone();
 		char[] arr = new char[size];
 		for (int i = 0; i < size; i++) {

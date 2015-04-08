@@ -22,7 +22,7 @@ public class SequenceAlignment {
 	
 	@Override
 	public String toString() {
-		return null;  // TODO
+		return patternSegment + "\n" + textSegment;
 	}
 
 }
