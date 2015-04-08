@@ -1,7 +1,6 @@
 package cpsc445project;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,22 +36,22 @@ public class Alignment {
 		
 		BWTIndexBuilder builder = new SimpleBWTIndexBuilder();
 		List<Character> alphabet = new ArrayList<Character>();
-		alphabet.add('\0');
+		/*alphabet.add('\0');
 		alphabet.add('a');
 		alphabet.add('c');
 		alphabet.add('t');
-		alphabet.add('g');
-		/*alphabet.add('\0');
+		alphabet.add('g');*/
+		alphabet.add('\0');
 		alphabet.add('A');
 		alphabet.add('C');
 		alphabet.add('T');
-		alphabet.add('G');*/
+		alphabet.add('G');
 		
-		String reversedString = new StringBuilder("gacaca").reverse().toString();
-		//String reversedString = new StringBuilder(text).reverse().toString();
+		//String reversedString = new StringBuilder("gacaca").reverse().toString();
+		String reversedString = new StringBuilder(text).reverse().toString();
 		//Build the BWT for the reverse of the text instead of the text
 		BWTIndex rbwt = builder.build(reversedString, alphabet);
-		pattern = "caca";
+		//pattern = "caca";
 		
 		Alignment a = new Alignment(rbwt, pattern);
 		double result = a.computeAlignment();
@@ -120,7 +119,7 @@ public class Alignment {
 			}
 			
 			curString.push(item.z);
-			System.out.println(curString);
+			//System.out.println(curString);
 			//Don't bother if this is the end of the string or if deeper than 2*pattern-length bound
 			if (item.z != '\0' && !(item.depth > pattern.length()*2)) { 
 				//align pattern with current prefix
@@ -128,6 +127,7 @@ public class Alignment {
 					substringAlignment = localAlignment(depth, item.z);
 					if (substringAlignment.getScore() > bestScore) {
 						bestScore = substringAlignment.getScore();
+						System.out.println(bestScore);
 						/* traceback */
 						String text = stackToString(curString);
 						bestAlignment = traceback(text, pattern, substringAlignment.getTextIndex(),
@@ -155,7 +155,6 @@ public class Alignment {
 		double n1;
 		double n2;
 		double n3;
-		//double bestForThisSubstring = 0;
 		AlignmentResult res = new AlignmentResult();
 		
 		for (int j=1; j<=pattern.length(); j++) {
@@ -185,28 +184,28 @@ public class Alignment {
 	
 	private SequenceAlignment traceback(String text, String pattern, int i, int j, double d, double e, ListMatrix N) {
 		int length = text.length();
-		char[] alignedPattern = new char[length];
-		char[] alignedText = new char[length];
+		Stack<Character> alignedPattern = new Stack<Character>();
+		Stack<Character> alignedText = new Stack<Character>();
 		
 		int k = 1;
 		while (i > 0 && j > 0) {
 			char t = text.charAt(i);
 			char p = pattern.charAt(j-1);
-			System.out.println(t + " " + p);
+			//System.out.println(t + " " + p);
 			if (N.get(i, j) == N.get(i - 1, j - 1) + scores.getScore(t, p)) {
-				alignedPattern[length - k] = p;
-				alignedText[length - k] = t;
+				alignedPattern.push(p);
+				alignedText.push(t);
 				i--;
 				j--;
 			
 			} else if (N.get(i, j) == N.get(i - 1, j) - d || N.get(i, j) == N.get(i - 1, j) - e) {
-				alignedPattern[length - k] = '-';
-				alignedText[length - k] = t;
+				alignedPattern.push('-');
+				alignedText.push(t);
 				i--;
 			
 			} else if (N.get(i, j) == N.get(i, j - 1) - d || N.get(i, j) == N.get(i, j - 1) - e) {
-				alignedPattern[length - k] = p;
-				alignedText[length - k] = '-';
+				alignedPattern.push(p);
+				alignedText.push('-');
 				j--;
 				
 			} else {
@@ -216,7 +215,7 @@ public class Alignment {
 			k++;
 		}
 		
-		return new SequenceAlignment(0.0, String.valueOf(alignedPattern), String.valueOf(alignedText));
+		return new SequenceAlignment(0.0, stackToString(alignedPattern), stackToString(alignedText));
 	}
 	
 	private static double max(double... vals) {
@@ -275,7 +274,6 @@ public class Alignment {
 			}
 			
 			text = strBuilder.toString();
-			System.out.println(text);  // DEBUG
 			
 		} catch (IOException e) {
 			System.err.println(e);
