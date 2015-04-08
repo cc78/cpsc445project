@@ -217,7 +217,10 @@ public class Alignment {
 			k++;
 		}
 		
-		return new SequenceAlignment(0.0, stackToString(alignedPattern), stackToString(alignedText));
+		String pat = new StringBuilder(stackToString(alignedPattern)).reverse().toString();  // for now
+		String tex = new StringBuilder(stackToString(alignedText)).reverse().toString();     // for now
+		
+		return new SequenceAlignment(0.0, pat, tex);
 	}
 	
 	private static double max(double... vals) {
