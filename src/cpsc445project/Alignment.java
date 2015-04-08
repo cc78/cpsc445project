@@ -37,21 +37,22 @@ public class Alignment {
 		
 		BWTIndexBuilder builder = new SimpleBWTIndexBuilder();
 		List<Character> alphabet = new ArrayList<Character>();
-		/*alphabet.add('\0');
+		alphabet.add('\0');
 		alphabet.add('a');
 		alphabet.add('c');
 		alphabet.add('t');
-		alphabet.add('g');*/
-		alphabet.add('\0');
+		alphabet.add('g');
+		/*alphabet.add('\0');
 		alphabet.add('A');
 		alphabet.add('C');
 		alphabet.add('T');
-		alphabet.add('G');
+		alphabet.add('G');*/
 		
-		//String reversedString = new StringBuilder("gacaca").reverse().toString();
-		String reversedString = new StringBuilder(text).reverse().toString();
+		String reversedString = new StringBuilder("gacaca").reverse().toString();
+		//String reversedString = new StringBuilder(text).reverse().toString();
 		//Build the BWT for the reverse of the text instead of the text
 		BWTIndex rbwt = builder.build(reversedString, alphabet);
+		pattern = "caca";
 		
 		Alignment a = new Alignment(rbwt, pattern);
 		double result = a.computeAlignment();
@@ -128,9 +129,13 @@ public class Alignment {
 					if (substringAlignment.getScore() > bestScore) {
 						bestScore = substringAlignment.getScore();
 						// do traceback here
-						String text = String.valueOf(curString.toArray());
-						bestAlignment = traceback(text, (int) substringAlignment.getTextIndex(),
-								(int) substringAlignment.getPatternIndex(), d, e, N);
+						
+						String text = stackToString(curString);
+						System.out.println(text);
+						
+						//String text = String.valueOf(curString.toArray()).substring(0, stack.size() - item.depth);  // This is incorrect
+						bestAlignment = traceback(text, pattern, substringAlignment.getTextIndex(),
+								substringAlignment.getPatternIndex(), d, e, N);
 						bestAlignment.setScore(bestScore);
 					}
 				}
@@ -181,32 +186,30 @@ public class Alignment {
 		return res;
 	}
 	
-	private SequenceAlignment traceback(String text, int i, int j, double d, double e, ListMatrix N) {
+	private SequenceAlignment traceback(String text, String pattern, int i, int j, double d, double e, ListMatrix N) {
 		int length = text.length();
 		char[] alignedPattern = new char[length];
 		char[] alignedText = new char[length];
 		
 		int k = 1;
-		int tIndex = length - 1;
-		int pIndex = pattern.length() - 1;
-		while (tIndex >= 0 && pIndex >= 0) {
-			char t = text.charAt(tIndex);
-			char p = pattern.charAt(pIndex);
+		while (i >= 0 && j >= 0) {
+			char t = text.charAt(i);
+			char p = pattern.charAt(j);
 			if (N.get(i, j) == N.get(i - 1, j - 1) + scores.getScore(t, p)) {
 				alignedPattern[length - k] = p;
 				alignedText[length - k] = t;
-				tIndex--;
-				pIndex--;
+				i--;
+				j--;
 			
 			} else if (N.get(i, j) == N.get(i - 1, j) - d || N.get(i, j) == N.get(i - 1, j) - e) {
 				alignedPattern[length - k] = '-';
 				alignedText[length - k] = t;
-				tIndex--;
+				i--;
 			
 			} else if (N.get(i, j) == N.get(i, j - 1) - d || N.get(i, j) == N.get(i, j - 1) - e) {
 				alignedPattern[length - k] = p;
 				alignedText[length - k] = '-';
-				pIndex--;
+				j--;
 				
 			} else {
 				System.err.println("Error during traceback");
@@ -238,6 +241,17 @@ public class Alignment {
 				index = i;
 		}
 		return index;
+	}
+	
+	// This is pretty awful
+	private String stackToString(Stack<Character> stack) {
+		int size = stack.size();  // ignore empty character at the bottom of stack
+		Stack<Character> stackCopy = (Stack<Character>) stack.clone();
+		char[] arr = new char[size];
+		for (int i = 0; i < size; i++) {
+			arr[size - i - 1] = stackCopy.pop();
+		}
+		return String.valueOf(arr);
 	}
 	
 	/* 
