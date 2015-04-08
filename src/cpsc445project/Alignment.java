@@ -109,7 +109,7 @@ public class Alignment {
 		Stack<StackItem> stack = new Stack<StackItem>();
 		stack.push(new StackItem(0, n-1, ' ', 0));
 		
-		double substringScore;
+		AlignmentResult substringAlignment;
 		SequenceAlignment bestAlignment;
 		while (!stack.empty()) {
 			StackItem item = stack.pop();
@@ -124,12 +124,14 @@ public class Alignment {
 			if (item.z != '\0' && !(item.depth > pattern.length()*2)) { 
 				//align pattern with current prefix
 				if (depth > 0) {
-					substringScore = localAlignment(depth, item.z);
-					if (substringScore > bestScore) {
-						bestScore = substringScore;
+					substringAlignment = localAlignment(depth, item.z);
+					if (substringAlignment.getScore() > bestScore) {
+						bestScore = substringAlignment.getScore();
 						// do traceback here
-						//bestAlignment = traceback(...);
-						//bestAlignment.setScore(bestScore);
+						String text = String.valueOf(curString.toArray());
+						bestAlignment = traceback(text, (int) substringAlignment.getTextIndex(),
+								(int) substringAlignment.getPatternIndex(), d, e, N);
+						bestAlignment.setScore(bestScore);
 					}
 				}
 				
@@ -147,11 +149,13 @@ public class Alignment {
 		return bestScore;
 	}
 	
-	private double localAlignment(Integer i, char c){
+	private AlignmentResult localAlignment(Integer i, char c){
 		double n1;
 		double n2;
 		double n3;
-		double bestForThisSubstring = 0;
+		//double bestForThisSubstring = 0;
+		AlignmentResult res = new AlignmentResult();
+		
 		for (int j=1; j<=pattern.length(); j++) {
 		    //N1
 			n1 = N.get(i-1, j-1) + scores.getScore(c,pattern.charAt(j-1));
@@ -167,23 +171,25 @@ public class Alignment {
 		    N3.set(i, j, n3);		    
 
 		    double bestval = max(N1.get(i,j), N2.get(i,j), N3.get(i,j));
-		    if (bestval > bestForThisSubstring) {
-		    	bestForThisSubstring = bestval;
+		    if (bestval > res.getScore()) {
+		    	res.setScore(bestval);
+		    	res.setTextIndex(i);
+		    	res.setPatternIndex(j);
 		    }
 		    N.set(i, j, bestval);
 		}
-		return bestForThisSubstring;
+		return res;
 	}
 	
-	private SequenceAlignment traceback(String text, String pattern, int tEndIndex, int pEndIndex, int i, int j,
-			int length, int d, int e, ListMatrix N) {
+	private SequenceAlignment traceback(String text, int i, int j, double d, double e, ListMatrix N) {
+		int length = text.length();
 		char[] alignedPattern = new char[length];
 		char[] alignedText = new char[length];
 		
 		int k = 1;
-		int tIndex = tEndIndex;
-		int pIndex = pEndIndex;
-		while (tIndex < length || pIndex < length) {
+		int tIndex = length - 1;
+		int pIndex = pattern.length() - 1;
+		while (tIndex >= 0 && pIndex >= 0) {
 			char t = text.charAt(tIndex);
 			char p = pattern.charAt(pIndex);
 			if (N.get(i, j) == N.get(i - 1, j - 1) + scores.getScore(t, p)) {
@@ -209,8 +215,7 @@ public class Alignment {
 			k++;
 		}
 		
-		return new SequenceAlignment(tEndIndex - length, tEndIndex, 0.0, String.valueOf(alignedPattern),
-				String.valueOf(alignedText));
+		return new SequenceAlignment(0.0, String.valueOf(alignedPattern), String.valueOf(alignedText));
 	}
 	
 	private static double max(double... vals) {
