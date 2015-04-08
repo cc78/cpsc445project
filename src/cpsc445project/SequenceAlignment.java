@@ -22,7 +22,18 @@ public class SequenceAlignment {
 	
 	@Override
 	public String toString() {
-		return patternSegment + "\n" + textSegment;
+		StringBuilder builder = new StringBuilder();
+		int startIndex = 0;
+		int lineLength = 80;
+		
+		while (startIndex < patternSegment.length()) {
+			int endIndex = Math.min(startIndex + lineLength, patternSegment.length());
+			builder.append(patternSegment.substring(startIndex, endIndex) + "\n" +
+					textSegment.substring(startIndex, endIndex) +"\n\n");
+			startIndex = endIndex;
+		}
+		
+		return builder.toString();
 	}
 
 }

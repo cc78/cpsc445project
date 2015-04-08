@@ -230,18 +230,6 @@ public class Alignment {
 		return max;
 	}
 	
-	private int indexOfMax(double[] vals) {
-		int index = 0;
-		double max = vals[0];
-		
-		for (int i = 1; i < vals.length; i++) {
-			if (vals[i] > max)
-				max = vals[i];
-				index = i;
-		}
-		return index;
-	}
-	
 	// This is pretty awful
 	private String stackToString(Stack<Character> stack) {
 		int size = stack.size();
