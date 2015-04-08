@@ -185,11 +185,9 @@ public class Alignment {
 	}
 	
 	private SequenceAlignment traceback(String text, String pattern, int i, int j, double d, double e, ListMatrix N) {
-		int length = text.length();
 		Stack<Character> alignedPattern = new Stack<Character>();
 		Stack<Character> alignedText = new Stack<Character>();
 		
-		int k = 1;
 		while (i > 0 && j > 0) {
 			char t = text.charAt(i);
 			char p = pattern.charAt(j-1);
@@ -214,7 +212,6 @@ public class Alignment {
 				System.err.println("Error during traceback");
 				System.exit(1);
 			}
-			k++;
 		}
 		
 		String pat = new StringBuilder(stackToString(alignedPattern)).reverse().toString();  // for now
