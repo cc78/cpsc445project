@@ -45,25 +45,29 @@ public class Alignment {
 		System.out.println("Read pattern from file; length: " + pattern.length());
 
 		BWTIndexBuilder builder = new SimpleBWTIndexBuilder();
+		
 		List<Character> alphabet = new ArrayList<Character>();
-		/*alphabet.add('\0');
-		alphabet.add('a');
-		alphabet.add('c');
-		alphabet.add('t');
-		alphabet.add('g');*/
 		alphabet.add('\0');
 		alphabet.add('A');
 		alphabet.add('C');
 		alphabet.add('T');
 		alphabet.add('G');
-
-		String reversedString = new StringBuilder(text).reverse().toString();
+		
 		//Build the BWT for the reverse of the text instead of the text
+		String reversedString = new StringBuilder(text).reverse().toString();
+		
+		long bwtStartTime = System.currentTimeMillis();
 		BWTIndex rbwt = builder.build(reversedString, alphabet);
+		long bwtEndtTime = System.currentTimeMillis();
+		System.out.println("Built BWT in " + (bwtEndtTime - bwtStartTime) + " ms.");
 
 		Alignment a = new Alignment(rbwt, pattern);
+		
+		long alignmentStartTime = System.currentTimeMillis();
 		List<SequenceAlignment> results = a.computeAlignment();
-
+		long alignmentEndTime = System.currentTimeMillis();
+		System.out.println("Finished alignment in " + (alignmentEndTime - alignmentStartTime) + " ms.");
+		
 		writeResultsToFile(results, outputFileName);
 
 	}
@@ -160,19 +164,6 @@ public class Alignment {
 							alignmentQueue.add(topAlignment);
 						}
 					}
-
-					/*if (substringAlignment.getScore() > bestScore)
-					 *  {
-						bestScore = substringAlignment.getScore();
-						System.out.println(bestScore);
-						String text = stackToString(curString);
-						bestAlignment = traceback(text, pattern, substringAlignment.getTextIndex(),
-								substringAlignment.getPatternIndex(), d, e, N);
-						bestAlignment.setScore(bestScore);
-						System.out.println(bestAlignment);
-					} else if (substringAlignment.getScore() <= 0) {
-						continue;
-					}*/
 				}
 
 				for (Character c : rbwt.getAlphabet()) {
@@ -232,7 +223,7 @@ public class Alignment {
 		while (i > 0 && j > 0) {
 			char t = text.charAt(i);
 			char p = pattern.charAt(j-1);
-			//System.out.println(t + " " + p);
+			
 			if (N.get(i, j) == N.get(i - 1, j - 1) + scores.getScore(t, p)) {
 				alignedPattern.push(p);
 				alignedText.push(t);
